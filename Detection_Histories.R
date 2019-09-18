@@ -18,9 +18,11 @@
   
   #  Read in data
   #  Camera trap stations: deploy and removal dates
-  cam_stations <- read.csv("./Input/OK_Camera_Stations_18-19.csv")
+  #cam_stations <- read.csv("./Input/OK_Camera_Stations_18-19.csv")
+  cam_stations <- read.csv("OK_Camera_Stations_18-19.csv")
   #  Classified images from camera traps- this takes a few seconds
-  megadata <- read.csv("./Input/MegaData_Cameras_summer18-MISSING_Beth&Robbie.csv")
+  #megadata <- read.csv("./Input/MegaData_Cameras_summer18-MISSING_Beth&Robbie.csv")
+  megadata <- read.csv("MegaData_Cameras_summer18-MISSING_Beth&Robbie.csv")
   
   str(megadata)
   
@@ -78,9 +80,18 @@
       Problem2_to = as.Date(Problem2_to, format = "%m/%d/%Y")
     )
 
+  #  Were any stations established after time window of interest (08/31/2018)
+  late_deploy <- stations[stations$Set_date > "2018-08-31",]
+  print(late_deploy)
+  
+  #  Remove stations that were established after time window of interest (08/31/2018)
+  stations <- stations[stations$Set_date < "2018-08-31",]
+  
   head(stations)
   str(stations)
   is.na(stations$Pull_date)
+  
+
   
   #  camtrapR time!
   #  =========================================
@@ -89,7 +100,11 @@
   
   #  Create camera operation table- needed for creating deteciton histories
   #  Creates a matrix with each camera and date it was deployed
-  #  1 = operating, NA = not deployed
+  #  1 = operating, 0 = not operating but deployed, NA = not deployed
+
+  #  NOTE: Consider double cameras in NE- is each camera a unique station or are
+  #  there 2 cameras at the same station? Decision will affect how you set up 
+  #  data and these functions.
   cam_probs <- cameraOperation(CTtable = stations,
                                 stationCol = "Cell_ID",
                                 cameraCol = "Camera_ID",
@@ -97,12 +112,18 @@
                                 retrievalCol = "Pull_date",
                                 writecsv = F, 
                                 hasProblems = T,
-                                byCamera = T,
-                                allCamsOn = F,
+                                byCamera = F,  
+                                # F = operability matrix computed by station, not camera
+                                allCamsOn = F,            
+                                # F = at least 1 camera is active to consider station operational
+                                camerasIndependent = F, 
+                                # F = doesn't matter how many cameras are present as long as 1 is operational 
                                 dateFormat = "%Y-%m-%d")  # note the date format
   
-  head(cam_probs)
   probs <- as.data.frame(cam_probs)
+  head(probs)
+  
+  
   
   #  Combine date:time into a column to create detection histories
   images_summer18$DateTimeOriginal <- with(images_summer18, as.POSIXct(paste(Date, Time), format = "%Y-%m-%d %H:%M:%S"))
@@ -110,20 +131,38 @@
   head(images_summer18)
   
   #  Create detection history for a single species
+  #  For now going with 14 day sampling occasions
   DetHist_coug <- detectionHistory(recordTable = images_summer18,
                                    camOp = cam_probs,
                                    stationCol = "Cell_ID", 
                                    speciesCol = "Species",
                                    recordDateTimeCol = "DateTimeOriginal",
                                    species = "Cougar",
-                                   occasionLength = 7, # number of days
-                                   day1 = "station",   # start on deployment date
-                                   includeEffort = F,  # fills in NA when station was malfunctioning
+                                   occasionLength = 14, # number of days
+                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
+                                   includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
-                                   writecsv = F,
-                                   outDir = "./Input")
+                                   writecsv = T,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+  
+  head(DetHist_coug)
+  
+  DetHist_mule <- detectionHistory(recordTable = images_summer18,
+                                   camOp = cam_probs,
+                                   stationCol = "Cell_ID", 
+                                   speciesCol = "Species",
+                                   recordDateTimeCol = "DateTimeOriginal",
+                                   species = "Mule Deer",
+                                   occasionLength = 14, # number of days
+                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
+                                   includeEffort = F,   # fills in NA when station was malfunctioning
+                                   timeZone = "US/Pacific",
+                                   writecsv = T,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+  
+  # Error in detectionHistory(recordTable = images_summer18, camOp = cam_probs,  : 
+  #                             Not all values of stationCol in recordTable are matched by rownames of camOp
 
 
-  #Error in detectionHistory(recordTable = images_summer18, camOp = cam_probs,  : 
-  #Not all values of stationCol in recordTable are matched by rownames of camOp
+
   
