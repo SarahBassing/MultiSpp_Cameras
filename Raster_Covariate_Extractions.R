@@ -5,8 +5,9 @@
   ##  ==============================================================
   ##  Script to extract covariate data from various raster files at 
   ##  specific geographic locations. Specifically, land cover data from
-  ##  the National Land Cover Databse, and elevation & terrain ruggedness
-  ##  from a WA digital elevation model (DEM).
+  ##  the National Land Cover Databse, elevation & terrain ruggedness
+  ##  from a WA digital elevation model (DEM), and road density (km/km^2 
+  ##  of roads).
   ##  Originally created by Staci Amburgey & modified by Olivia Sanderfoot
   ##  ==============================================================
   
@@ -16,6 +17,15 @@
   library(sp)
   library(rgdal)
   library(ggplot2)
+  
+  
+  #  Read in location data
+  #  Used cougar locations
+  cougar <- read.csv("./Input/cougars_summer18.csv")
+  cougar_spdf <- SpatialPointsDataFrame(cougar[,10:11], cougar, proj4string = CRS("+init=epsg:2855"))
+  #  Randomly selected "available points"
+  available <- read.csv("./Input/coug18_avail_df.csv")
+  available_spdf <- SpatialPointsDataFrame(available[,4:5], available, proj4string = CRS("+init=epsg:2855"))
   
   
   #  National Land Cover Database 
@@ -28,17 +38,9 @@
   res(landcov)
   landproj <- projection(landcov)
   
-  #  Read in location data
-  #  Used cougar locations
-  cougar <- read.csv("./Input/cougars_summer18.csv")
-  cougar_spdf <- SpatialPointsDataFrame(cougar[,10:11], cougar, proj4string = CRS("+init=epsg:2855"))
-  #  Reproject so it matches landcov (way faster than trying to reproject landcov)
+  #  Reproject used & available locations to match landcov 
+  #  Way faster than trying to reproject landcov
   cougar_nlcd_proj <- spTransform(cougar_spdf, crs(landproj))
-  
-  #  Randomly selected "available points"
-  available <- read.csv("./Input/coug18_avail_df.csv")
-  available_spdf <- SpatialPointsDataFrame(available[,4:5], available, proj4string = CRS("+init=epsg:2855"))
-  #  Reproject so it matches landcov
   available_nlcd_proj <- spTransform(available_spdf, crs(landproj))
   
   #  Double check projections match
@@ -145,3 +147,48 @@
   #  Terrain Ruggedness Index
   require(spatialEco)
   tri <- spatialEco::tri(DEM)  #  OH MY GOD THIS IS SLOW... maybe not for right now
+  
+  
+  
+  #  Road Density
+  #  =============================
+  #  Read in road density raster (999 x 999 m resolution) - created by L. Satterfield
+  rd_dnsty <- raster("G:/My Drive/1_Repositories/MultiSpp_Cameras/Shapefiles/Roads/roaddensity/road.density_km2_IMG.img")
+  res(rd_dnsty)
+  projection(rd_dnsty)  # already matches cougar data
+  
+  #  Make camera staions spdf non-spatial
+  cougar_rddnsty_spdf <- as.data.frame(cougar_spdf)
+  available_rddnsty_spdf <- as.data.frame(available_spdf)
+  
+  plot(cougar_rddnsty_spdf)
+  plot(DEM, add = TRUE)
+  plot(cougar_rddnsty_spdf, add = TRUE, pch = 19, col = "red")
+  
+  #  Convert spdf into a df with DEM projection
+  used_locs <- as.data.frame(cougar_rddnsty_spdf) 
+  class(used_locs)
+  str(used_locs)
+  
+  avail_locs <- as.data.frame(available_rddnsty_spdf)
+  class(avail_locs)
+  str(avail_locs)
+  
+  #  Extract elevation at geographic locations
+  used_locs$rd_dnsty <- extract(x = rd_dnsty, y = used_locs[,10:11])
+  avail_locs$rd_dnsty <- extract(x = rd_dnsty, y = avail_locs[,4:5])
+  
+  #  Check output
+  used_locs$rd_dnsty[1:5]
+  head(used_locs)
+  #  Exclude 3rd reprojected coordiantes in used data
+  cougar_used_rddnsty <- used_locs[,c(2:11,14)]
+  
+  avail_locs$rd_dnsty[1:5]
+  head(avail_locs)
+  cougar_avail_rddnsty <- avail_locs[,c(2:8)]
+  
+  #  Save
+  write.csv(cougar_used_rddnsty, "input/cougar_used_rddnsty.csv")
+  write.csv(cougar_avail_rddnsty, "input/cougar_avail_rddnsty.csv")
+  
