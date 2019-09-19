@@ -161,9 +161,9 @@
   cougar_rddnsty_spdf <- as.data.frame(cougar_spdf)
   available_rddnsty_spdf <- as.data.frame(available_spdf)
   
-  plot(cougar_rddnsty_spdf)
-  plot(DEM, add = TRUE)
-  plot(cougar_rddnsty_spdf, add = TRUE, pch = 19, col = "red")
+  # plot(cougar_rddnsty_spdf)
+  # plot(DEM, add = TRUE)
+  # plot(cougar_rddnsty_spdf, add = TRUE, pch = 19, col = "red")
   
   #  Convert spdf into a df with DEM projection
   used_locs <- as.data.frame(cougar_rddnsty_spdf) 
