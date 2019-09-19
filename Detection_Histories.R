@@ -19,10 +19,8 @@
   #  Read in data
   #  Camera trap stations: deploy and removal dates
   cam_stations <- read.csv("./Data/OK_Camera_Stations_18-19.csv")
-  #cam_stations <- read.csv("OK_Camera_Stations_18-19.csv")
   #  Classified images from camera traps- this takes a few seconds
-  megadata <- read.csv("./Data/MegaData_Cameras_summer18-MISSING_Beth&Robbie.csv")
-  #megadata <- read.csv("MegaData_Cameras_summer18-MISSING_Beth&Robbie.csv")
+  megadata <- read.csv("./Data/MegaData_Cameras_summer18_091919.csv")
   
   str(megadata)
   
@@ -93,7 +91,7 @@
   str(stations)
   is.na(stations$Pull_date)
   
-  write.csv(stations, "./Data/OK_cam_stations.csv")
+  #write.csv(stations, "./Data/OK_cam_stations.csv")
 
   
   #  camtrapR time!
@@ -167,8 +165,8 @@
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
-                                   writecsv = F,
-                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+                                   writecsv = T,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   head(DetHist_coug)
   
   #  Mule deer DH
@@ -182,8 +180,8 @@
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
-                                   writecsv = F,
-                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+                                   writecsv = T,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   head(DetHist_mule)
 
   
@@ -204,8 +202,8 @@
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
-                                   writecsv = F,
-                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+                                   writecsv = T,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   head(DetHist_wolf)
   
   #  White-tailed deer DH
@@ -219,8 +217,8 @@
                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                   includeEffort = F,   # fills in NA when station was malfunctioning
                                   timeZone = "US/Pacific",
-                                  writecsv = F,
-                                  outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+                                  writecsv = T,
+                                  outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   head(DetHist_wtd)
   
   #  Elk DH
@@ -234,8 +232,8 @@
                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                   includeEffort = F,   # fills in NA when station was malfunctioning
                                   timeZone = "US/Pacific",
-                                  writecsv = F,
-                                  outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+                                  writecsv = T,
+                                  outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   head(DetHist_elk)
   
   #  Black bear DH
@@ -249,8 +247,8 @@
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
-                                   writecsv = F,
-                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+                                   writecsv = T,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   head(DetHist_blkbear)
   
   #  Moose DH
@@ -264,8 +262,8 @@
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
-                                   writecsv = F,
-                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+                                   writecsv = T,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   head(DetHist_moose)
   
   #  Coyote DH
@@ -279,8 +277,8 @@
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
-                                   writecsv = F,
-                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+                                   writecsv = T,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   head(DetHist_coy)
   
   #  Bobcat DH
@@ -294,7 +292,7 @@
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
-                                   writecsv = F,
-                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+                                   writecsv = T,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   head(DetHist_bobcat)
   
