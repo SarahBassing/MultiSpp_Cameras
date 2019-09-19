@@ -365,7 +365,7 @@
   #  3. Land cover type (categrorical)
   #  =================================
   #  Currently based on 30x30 m cell where point fell
-  #  Data extracted with LandCover_Covaraite_Extraction.R script
+  #  Data extracted with Raster_Covariate_Extractions.R script
   cougar_used_landcov <- read.csv("input/cougar_used_landcov.csv")
   cougar_avail_landcov <- read.csv("input/cougar_avail_landcov.csv")
   
@@ -404,6 +404,10 @@
   
   #  4. Elevation (& elevation^2?) & Ruggedness (continuous)
   #  =======================================================
+  #  Currently based on 30x30 m cell where point fell
+  #  Data extracted with Raster_Covariate_Extractions.R script
+  cougar_used_dem <- read.csv("input/cougar_used_dem.csv")
+  cougar_avail_dem <- read.csv("input/cougar_avail_dem.csv")
   
   
   
