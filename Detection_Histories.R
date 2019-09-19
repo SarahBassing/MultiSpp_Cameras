@@ -72,8 +72,8 @@
     transmute(
       Cell_ID = Cell_ID,
       Camera_ID = Camera_ID, 
-      UTM_X = Latitude,
-      UTM_Y = Longitude,
+      UTM_X = Longitude,
+      UTM_Y = Latitude,
       Set_date = as.Date(Setup_date, format = "%m/%d/%Y"),  # Note the different date formatting here!
       Pull_date = as.Date(Retrieval_date, format = "%m/%d/%Y"),
       Problem1_from = as.Date(Problem1_from, format = "%m/%d/%Y"),
@@ -93,6 +93,7 @@
   str(stations)
   is.na(stations$Pull_date)
   
+  write.csv(stations, "./Data/OK_cam_stations.csv")
 
   
   #  camtrapR time!
