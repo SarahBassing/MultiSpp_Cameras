@@ -130,7 +130,7 @@
   
   avail_locs$elev[1:5]
   head(avail_locs)
-  cougar_avail_dem <- avail_locs
+  cougar_avail_dem <- avail_locs[,c(2:8)]
   
   #  Exclude 3rd reprojected coordiantes in used data
   cougar_used_dem <- used_locs[,c(2:11,14)]
