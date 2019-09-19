@@ -86,6 +86,20 @@
   # write.csv(cougars_summer18, file = "./input/cougars_summer18.csv")
   # writeOGR(coug18_used_spdf, dsn = "./input", layer = "coug18_used_spdf", driver = "ESRI Shapefile")
   
+  #  Count number of points per study area with final number of cougars
+  n_studyarea_pts <- cougars_summer18 %>%
+    group_by(Region) %>%
+    tally() %>%
+    as.data.frame() %>%
+    ungroup() %>%
+    print()
+  
+  #  Recount number of points per individual animal
+  n_cougar_pts <- cougars_summer18 %>%
+    group_by(Animal_ID) %>%
+    tally() %>%
+    as.data.frame() %>%
+    ungroup()
   
   
   
@@ -193,6 +207,14 @@
   coug18_avail_df <- as.data.frame(coug18_avail_spdf)
   # write.csv(coug18_avail_df, file = "./Input/coug18_avail_df.csv")
   # writeOGR(coug18_avail_spdf, dsn = "./Input", layer = "coug18_avail_spdf", driver = "ESRI Shapefile")
+  
+  #  Count total number of available points in each study area
+  n_rnd_pts <- coug18_avail_df %>%
+    group_by(Region) %>%
+    tally() %>%
+    as.data.frame() %>%
+    ungroup() %>%
+    print()
   
   
   
@@ -348,9 +370,44 @@
   cougar_avail_landcov <- read.csv("input/cougar_avail_landcov.csv")
   
   #  Bin similar land cover types to reduce number of categories
+  sort(unique(cougar_used_landcov$NLCD))
+  sort(unique(cougar_avail_landcov$NLCD))
+
+  cougar_used_landcov <- mutate(cougar_used_landcov,
+                                # merge developed habitats into one
+                                NLCD_adj = ifelse(NLCD == "21", "22", NLCD),     
+                                NLCD_adj = ifelse(NLCD == "23", "22", NLCD_adj),
+                                NLCD_adj = ifelse(NLCD == "24", "22", NLCD_adj),
+                                # merge forested habitats into one
+                                NLCD_adj = ifelse(NLCD == "41", "43", NLCD_adj), 
+                                NLCD_adj = ifelse(NLCD == "42", "43", NLCD_adj),
+                                # merge agricultural habitats into one
+                                NLCD_adj = ifelse(NLCD == "81", "82", NLCD_adj),
+                                NLCD_adj = as.factor(NLCD_adj)
+                                ) %>%
+    dplyr::select(-NLCD)
+  
+  cougar_avail_landcov <- mutate(cougar_avail_landcov,
+                                # merge developed habitats into one
+                                NLCD_adj = ifelse(NLCD == "21", "22", NLCD),     
+                                NLCD_adj = ifelse(NLCD == "23", "22", NLCD_adj),
+                                NLCD_adj = ifelse(NLCD == "24", "22", NLCD_adj),
+                                # merge forested habitats into one
+                                NLCD_adj = ifelse(NLCD == "41", "43", NLCD_adj), 
+                                NLCD_adj = ifelse(NLCD == "42", "43", NLCD_adj),
+                                # merge agricultural habitats into one
+                                NLCD_adj = ifelse(NLCD == "81", "82", NLCD_adj),
+                                NLCD_adj = as.factor(NLCD_adj)
+                                ) %>%
+    dplyr::select(-NLCD)
   
   
-  #  -elevation (& elevation 2?) & ruggedness (continuous)
+  #  4. Elevation (& elevation^2?) & Ruggedness (continuous)
+  #  =======================================================
+  
+  
+  
+  
   #  -NDVI (continuous)
   #  -burn severity and/or perimeter (categorical)
   #  -percent forest cover (continuous)  
@@ -359,16 +416,17 @@
   ####  Input data for model  ####
   #  =============================
   #  "used" = 1, "available" = 0
-  used <- rep(1, n_cougar_pts[n_cougar_pts$Animal_ID == "MVC202F", 2])
-  avail <- rep(0, 10000)
+  used <- rep(1, n_studyarea_pts[1,2])
+  avail <- rep(0, n_rnd_pts[1,2])
   
+  #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
   #  Matrix for regression
   dat <- as.data.frame(rep("MVC202F", n_cougar_pts[n_cougar_pts$Animal_ID == "MVC202F", 2]))
   dat$used <- used
   dat$road_dist <- cougar1_sf$road_dist
   colnames(dat) <- c("Animal_ID", "used", "road_dist")
   
-  
+  #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
   available <- as.data.frame(rep("MVC202F", 10000))
   available$used <- avail
   available$road_dist <- rndpts_sf$FAKE_road_dist
@@ -384,7 +442,7 @@
   #write.csv(dat, file = "./input/dat.csv")
   #save(dat, file = "input/dat.RData")
   #  My .RData files aren't working- might have to do with administrative 
-  #  privilage to update R on this stupid computer... need to talk to IT
+  #  privilage to update R on this computer... need to talk to IT
   
 
   
