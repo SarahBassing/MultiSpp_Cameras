@@ -127,6 +127,27 @@
   head(probs)
   
   
+  #  Double check Cell_ID match up between the two data sets
+  #  This will cause you pain if there are mismatches!!!
+  #  "Error in detectionHistory(recordTable = images_summer18, camOp = cam_probs,: 
+  #  Not all values of stationCol in recordTable are matched by rownames of camOp"
+  #  list out unique Cell_ID names from each data stream
+  cells1 <- unique(images_summer18$Cell_ID)
+  cells2 <- unique(rownames(probs))
+  #  Count the number of names from each
+  n1 <- 1:length(cells1)
+  n2 <- 1:length(cells2)
+  #  Create dataframes for each data stream
+  img_dat <- as.data.frame(cbind(n1, cells1))
+  colnames(img_dat) <-c("img_station_n", "Cell_ID")
+  cam_dat <- as.data.frame(cbind(n2, cells2, cells2))
+  colnames(cam_dat) <- c("station_n", "Cell_ID", "Station_cells")
+  #  Join dataframes by Cell_ID- should line up perfectly
+  #  NA's indicate mismatch
+  matching <- cam_dat %>%
+    full_join(img_dat, by = "Cell_ID")
+  
+  
   #  Create detection history for a single species
   #  Combine date:time into a column to create detection histories
   #  For now going with 14 day sampling occasions
@@ -150,7 +171,6 @@
   head(DetHist_coug)
   
   #  Mule deer DH
-  #  ERROR!!! 
   DetHist_mule <- detectionHistory(recordTable = images_summer18,
                                    camOp = cam_probs,
                                    stationCol = "Cell_ID", 
@@ -164,23 +184,13 @@
                                    writecsv = F,
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
   head(DetHist_mule)
-  # Error in detectionHistory(recordTable = images_summer18, camOp = cam_probs,  : 
-  #                             Not all values of stationCol in recordTable are matched by rownames of camOp
-  
-  unique(images_summer18$Cell_ID)
-  unique(rownames(probs))
-  
-  mule_pix <- images_summer18[images_summer18$Species == "Mule Deer",]
-  mule_cams <- unique(mule_pix$Cell_ID)
-  camOp_cams <- rownames(probs)
-  print(mule_cams); print(camOp_cams)
-  
 
-  # show all unique entries of the record table station column that are not in the camera trap station table
-  unique(images_summer18$Cell_ID)[!unique(images_summer18$Cell_ID) %in% probs$Cell_ID]
   
-  # show all unique entries of the camera trap station table station column that are not in record table
-  unique(probs$Cell_ID)[!unique(probs$Cell_ID) %in% unique(images_summer18$Cell_ID)]
+  #  Questions:  How do I truncate the encounter histories so they end in Aug?
+  
+  
+  
+  
   
   #  Wolf DH
   DetHist_wolf <- detectionHistory(recordTable = images_summer18,
@@ -228,66 +238,62 @@
   head(DetHist_elk)
   
   #  Black bear DH
-  #  Error
-  # DetHist_blkbear <- detectionHistory(recordTable = images_summer18,
-  #                                  camOp = cam_probs,
-  #                                  stationCol = "Cell_ID", 
-  #                                  speciesCol = "Species",
-  #                                  recordDateTimeCol = "DateTimeOriginal",
-  #                                  species = "Black Bear",
-  #                                  occasionLength = 14, # number of days
-  #                                  day1 = "2018-06-13", # start detecion history when 1st camera deployed
-  #                                  includeEffort = F,   # fills in NA when station was malfunctioning
-  #                                  timeZone = "US/Pacific",
-  #                                  writecsv = F,
-  #                                  outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
-  # head(DetHist_blkbear)
+  DetHist_blkbear <- detectionHistory(recordTable = images_summer18,
+                                   camOp = cam_probs,
+                                   stationCol = "Cell_ID",
+                                   speciesCol = "Species",
+                                   recordDateTimeCol = "DateTimeOriginal",
+                                   species = "Black Bear",
+                                   occasionLength = 14, # number of days
+                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
+                                   includeEffort = F,   # fills in NA when station was malfunctioning
+                                   timeZone = "US/Pacific",
+                                   writecsv = F,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+  head(DetHist_blkbear)
   
   #  Moose DH
-  #  Error
-  # DetHist_moose <- detectionHistory(recordTable = images_summer18,
-  #                                  camOp = cam_probs,
-  #                                  stationCol = "Cell_ID", 
-  #                                  speciesCol = "Species",
-  #                                  recordDateTimeCol = "DateTimeOriginal",
-  #                                  species = "Moose",
-  #                                  occasionLength = 14, # number of days
-  #                                  day1 = "2018-06-13", # start detecion history when 1st camera deployed
-  #                                  includeEffort = F,   # fills in NA when station was malfunctioning
-  #                                  timeZone = "US/Pacific",
-  #                                  writecsv = F,
-  #                                  outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
-  # head(DetHist_moose)
+  DetHist_moose <- detectionHistory(recordTable = images_summer18,
+                                   camOp = cam_probs,
+                                   stationCol = "Cell_ID",
+                                   speciesCol = "Species",
+                                   recordDateTimeCol = "DateTimeOriginal",
+                                   species = "Moose",
+                                   occasionLength = 14, # number of days
+                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
+                                   includeEffort = F,   # fills in NA when station was malfunctioning
+                                   timeZone = "US/Pacific",
+                                   writecsv = F,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+  head(DetHist_moose)
   
   #  Coyote DH
-  #  Error
-  # DetHist_coy <- detectionHistory(recordTable = images_summer18,
-  #                                  camOp = cam_probs,
-  #                                  stationCol = "Cell_ID", 
-  #                                  speciesCol = "Species",
-  #                                  recordDateTimeCol = "DateTimeOriginal",
-  #                                  species = "Coyote",
-  #                                  occasionLength = 14, # number of days
-  #                                  day1 = "2018-06-13", # start detecion history when 1st camera deployed
-  #                                  includeEffort = F,   # fills in NA when station was malfunctioning
-  #                                  timeZone = "US/Pacific",
-  #                                  writecsv = F,
-  #                                  outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
-  # head(DetHist_coy)
+  DetHist_coy <- detectionHistory(recordTable = images_summer18,
+                                   camOp = cam_probs,
+                                   stationCol = "Cell_ID",
+                                   speciesCol = "Species",
+                                   recordDateTimeCol = "DateTimeOriginal",
+                                   species = "Coyote",
+                                   occasionLength = 14, # number of days
+                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
+                                   includeEffort = F,   # fills in NA when station was malfunctioning
+                                   timeZone = "US/Pacific",
+                                   writecsv = F,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+  head(DetHist_coy)
   
   #  Bobcat DH
-  #  Error
-  # DetHist_bobcat <- detectionHistory(recordTable = images_summer18,
-  #                                  camOp = cam_probs,
-  #                                  stationCol = "Cell_ID", 
-  #                                  speciesCol = "Species",
-  #                                  recordDateTimeCol = "DateTimeOriginal",
-  #                                  species = "Bobcat",
-  #                                  occasionLength = 14, # number of days
-  #                                  day1 = "2018-06-13", # start detecion history when 1st camera deployed
-  #                                  includeEffort = F,   # fills in NA when station was malfunctioning
-  #                                  timeZone = "US/Pacific",
-  #                                  writecsv = F,
-  #                                  outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
-  # head(DetHist_bobcat)
+  DetHist_bobcat <- detectionHistory(recordTable = images_summer18,
+                                   camOp = cam_probs,
+                                   stationCol = "Cell_ID",
+                                   speciesCol = "Species",
+                                   recordDateTimeCol = "DateTimeOriginal",
+                                   species = "Bobcat",
+                                   occasionLength = 14, # number of days
+                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
+                                   includeEffort = F,   # fills in NA when station was malfunctioning
+                                   timeZone = "US/Pacific",
+                                   writecsv = F,
+                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
+  head(DetHist_bobcat)
   
