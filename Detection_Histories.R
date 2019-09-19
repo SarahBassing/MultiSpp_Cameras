@@ -163,10 +163,13 @@
                                    timeZone = "US/Pacific",
                                    writecsv = F,
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras")
-  #head(DetHist_mule)
+  head(DetHist_mule)
   # Error in detectionHistory(recordTable = images_summer18, camOp = cam_probs,  : 
   #                             Not all values of stationCol in recordTable are matched by rownames of camOp
-
+  
+  unique(images_summer18$Cell_ID)
+  unique(rownames(probs))
+  
   mule_pix <- images_summer18[images_summer18$Species == "Mule Deer",]
   mule_cams <- unique(mule_pix$Cell_ID)
   camOp_cams <- rownames(probs)
