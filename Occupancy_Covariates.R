@@ -51,10 +51,10 @@
   #  Find closest road (minimum distance) to each point & added to dataframe
   stations_sf$road_dist <- apply(road_dist_cams, 2, min)
   
-  ggplot() +
-    geom_sf(data = OK) +
-    geom_sf(data = roads_OK) +
-    geom_sf(data = stations_sf, aes(color = "Cell_ID"))
+  # ggplot() +
+  #   geom_sf(data = OK) +
+  #   geom_sf(data = roads_OK) +
+  #   geom_sf(data = stations_sf, aes(color = "Cell_ID"))
   
   #  1.5  Road Density
   #  =============================
@@ -67,9 +67,9 @@
   stations_rddnsty_df$rd_dnsty <- raster::extract(x = rd_dnsty, y = stations_rddnsty_df[,3:4])
   head(stations_rddnsty_df)
   
-  plot(stations_spdf)
-  plot(rd_dnsty, add = TRUE)
-  plot(stations_spdf, add = TRUE, pch = 19, col = "red")
+  # plot(stations_spdf)
+  # plot(rd_dnsty, add = TRUE)
+  # plot(stations_spdf, add = TRUE, pch = 19, col = "red")
   
   #  2. Distance to nearest stream
   #  =============================
@@ -80,11 +80,11 @@
   stations_sf$hydro_OK_dist <- apply(hydro_OK_cams, 2, min)
   stations_sf$hydro_Ch_dist <- apply(hydro_Ch_cams, 2, min)
   
-  ggplot() +
-    geom_sf(data = OK) +
-    geom_sf(data = hydro_OK) +
-    geom_sf(data = hydro_Ch) +
-    geom_sf(data = stations_sf, aes(color = "Cell_ID"))
+  # ggplot() +
+  #   geom_sf(data = OK) +
+  #   geom_sf(data = hydro_OK) +
+  #   geom_sf(data = hydro_Ch) +
+  #   geom_sf(data = stations_sf, aes(color = "Cell_ID"))
   
   #  3. Land cover (National Land Cover Database)
   #  =============================
@@ -111,9 +111,9 @@
                           ) %>%
     dplyr::select(-NLCD)
   
-  plot(stations_lc_spdf)
-  plot(landcov, add = TRUE)
-  plot(stations_lc_spdf, add = TRUE, pch = 19, col = "red")
+  # plot(stations_lc_spdf)
+  # plot(landcov, add = TRUE)
+  # plot(stations_lc_spdf, add = TRUE, pch = 19, col = "red")
   
   #  4. Elevation
   #  =========================
@@ -130,9 +130,9 @@
   stations_dem_df$elev <- extract(x = DEM, y = stations_dem_df[,3:4])
   head(stations_dem_df)
 
-  plot(stations_dem_spdf)
-  plot(DEM, add = TRUE)
-  plot(stations_dem_spdf, add = TRUE, pch = 19, col = "red")
+  # plot(stations_dem_spdf)
+  # plot(DEM, add = TRUE)
+  # plot(stations_dem_spdf, add = TRUE, pch = 19, col = "red")
   
   #  5. NDVI???
   
