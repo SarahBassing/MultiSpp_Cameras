@@ -285,8 +285,8 @@
     geom_sf(data = OKcoug18_avail_sf, aes(col = Animal_ID))
   
   
-  #  1. Distance to road (continuous)
-  #  ================================
+  #  1. Distance to nearest road (continuous)
+  #  ========================================
   #  Read in shapefile (these are big so they take awhile)
   # roads_SA <- st_read("Shapefiles/Roads/roads_SA.shp", crs = "+init=epsg:2855")
   roads_OK <- st_read("Shapefiles/Roads/roads_OKcoug.shp", crs = "+init=epsg:2855") 
@@ -297,7 +297,7 @@
     geom_sf(data = roads_OK) +
     geom_sf(data = OKcoug18_used_sf, aes(color = Animal_ID))
   
-  #  For all cougar locations (used)
+  #  For all cougar locations (used & available)
   #  Measure distance btwn each point and every road in study area
   #  THIS TAKES FOREVER
   road_dist_used_OKcoug <- st_distance(y = OKcoug18_used_sf, x = roads_OK)
