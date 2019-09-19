@@ -23,6 +23,7 @@
   library(sp)
   library(adehabitatHR)
   library(rgeos)
+  library(rgdal)
   library(ggplot2)
   library(anytime)
   library(stringr)
@@ -48,8 +49,8 @@
   ####  Filter and prep data for spatial work  
   #  ========================================
   
-  #  I only want collar data from 06/01/2018 - 08/31/2018 for now
-  cougars_summer18 <- cougars[cougars$DateTime > "2018-05-31 23:59:59" & cougars$DateTime < "2018-09-01 00:00:00", ]
+  #  I only want collar data from 06/01/2018 - 09/30/2018 for now
+  cougars_summer18 <- cougars[cougars$DateTime > "2018-05-31 23:59:59" & cougars$DateTime < "2018-10-01 00:00:00", ]
   
   #  Double check that I've filtered the data correctly
   min(cougars_summer18$DateTime); max(cougars_summer18$DateTime)
@@ -73,8 +74,9 @@
     print()
   
   #  Toss location data from animals with <20 locations in summer 2018
-  #  i.e., MVC226F & NEC108M
-  cougars_summer18 <- cougars_summer18[cougars_summer18$Animal_ID != "MVC226F" & cougars_summer18$Animal_ID != "NEC108M",]
+  #  i.e., MVC226F
+  cougars_summer18 <- cougars_summer18[cougars_summer18$Animal_ID != "MVC226F",]
+  #  & cougars_summer18$Animal_ID != "NEC108M"  # expanding date range gave him >100 extra points
   
   #  Review and save (csv, sf, spdf)
   head(cougars_summer18)
@@ -288,14 +290,15 @@
   #  1. Distance to nearest road (continuous)
   #  ========================================
   #  Read in shapefile (these are big so they take awhile)
+  #  Currently reading in shapefile that was cropped to 2018 cougar locations bbox
   # roads_SA <- st_read("Shapefiles/Roads/roads_SA.shp", crs = "+init=epsg:2855")
   roads_OK <- st_read("Shapefiles/Roads/roads_OKcoug.shp", crs = "+init=epsg:2855") 
   # roads_NE <- st_read("Shapefiles/Roads/roads_NEcoug.shp", crs = "+init=epsg:2855")
   
   #  Visualize
-  ggplot() +
-    geom_sf(data = roads_OK) +
-    geom_sf(data = OKcoug18_used_sf, aes(color = Animal_ID))
+  # ggplot() +
+  #   geom_sf(data = roads_OK) +
+  #   geom_sf(data = OKcoug18_used_sf, aes(color = Animal_ID))
   
   #  For all cougar locations (used & available)
   #  Measure distance btwn each point and every road in study area
@@ -305,7 +308,7 @@
   # road_dist_used_NEcoug <- st_distance(y = coug18_used_sf, x = roads_NE)
   # road_dist_avail_NEcoug <- st_distance(y = coug18_avail_sf, x = roads_NE)
   
-  save(road_dist_avail_OKcoug, file = "./input/road_dist_avail_OKcoug.RData")
+  #save(road_dist_avail_OKcoug, file = "./input/road_dist_avail_OKcoug.RData")
   
   #  Find closest road (minimum distance) to each point & added to dataframe
   coug18_used_sf$road_dist <- apply(road_dist_used_OKcoug, 2, min)
@@ -318,12 +321,18 @@
   # coug18_used_sf$road_dist <- apply(road_dist_used_NEcoug, 2, min)
   # coug18_avail_sf$road_dist <- apply(road_dist_avail_NEcoug, 2, min)
   
-  coug18_used <- as.data.frame(coug18_used_sf)
-  write.csv(coug18_used, "./Input/coug18_used.csv")
-
+  coug18_used_rd_dist <- as.data.frame(coug18_used_sf)
+  write.csv(coug18_used_rd_dist, "./Input/coug18_used_rd_dist.csv")
+  coug18_avail_rd_dist <- as.data.frame(coug18_avail_sf)
+  write.csv(coug18_avail_rd_dist, "./Input/coug18_avail_rd_dist.csv")
   
   
-  #  2. distance to water (continuous)
+  #  1.5  Road density (continuous)
+  #  ==============================
+  
+  
+  
+  #  2. Distance to water (continuous)
   #  ================================
   hydro_OK <- st_read("Shapefiles/Hydro/hydro_OK.shp", crs = "+init=epsg:2855") 
   hydro_Ch <- st_read("Shapefiles/Hydro/hydro_Ch.shp", crs = "+init=epsg:2855") 
@@ -332,10 +341,10 @@
   hydro_Sp <- st_read("Shapefiles/Hydro/hydro_Sp.shp", crs = "+init=epsg:2855")
   
   #  Visualize
-  ggplot() +
-    geom_sf(data = hydro_OK) +
-    geom_sf(data = hydro_Ch) +
-    geom_sf(data = coug18_used_sf, aes(color = Animal_ID))
+  # ggplot() +
+  #   geom_sf(data = hydro_OK) +
+  #   geom_sf(data = hydro_Ch) +
+  #   geom_sf(data = coug18_used_sf, aes(color = Animal_ID))
   
   #  Measure distance btwn each point and every stream in study area...
   #  this takes AWHILE
@@ -352,14 +361,14 @@
   
   #  Find shortest distance btwn each point and streams in different counties 
   #  and only save that one to df (Only need one measurement per point)
-  min_dist_coug <- transform(cougar1_sf, min_dist = pmin(hydro_OK_dist, hydro_Ch_dist))
-  min_dist_rnd <- transform(rndpts_sf, min_dist = pmin(hydro_OK_dist, hydro_Ch_dist))
+  # min_dist_coug <- transform(cougar1_sf, min_dist = pmin(hydro_OK_dist, hydro_Ch_dist))
+  # min_dist_rnd <- transform(rndpts_sf, min_dist = pmin(hydro_OK_dist, hydro_Ch_dist))
   #dont know if this works yet
   
   # give myself something to practice with for RSF b/c hydro_dist_rnd takes FOREVER
-  require(truncnorm) # truncates normal distribution by lower (a) & upper (b) bounds
-  road_dist_rnd_FAKE <- rtruncnorm(n = 10000, a = 0, b = 2000, mean = 350, sd = 150)
-  rndpts_sf$FAKE_road_dist <- road_dist_rnd_FAKE
+  # require(truncnorm) # truncates normal distribution by lower (a) & upper (b) bounds
+  # road_dist_rnd_FAKE <- rtruncnorm(n = 10000, a = 0, b = 2000, mean = 350, sd = 150)
+  # rndpts_sf$FAKE_road_dist <- road_dist_rnd_FAKE
   
   
   #  3. Land cover type (categrorical)
