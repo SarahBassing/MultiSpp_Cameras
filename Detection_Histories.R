@@ -7,14 +7,14 @@
   ##  data from each camera trap station. Uses camtrapR package to generate 
   ##  species-specific encounter histories that can be used for occupancy models.
   
-  ##  Acknowledgements: Script based on code originally provided by Mitch Pearson
-  ##  and Michael Haverda.
+  ##  Acknowledgements: Script based on code originally provided by Mitch Parsons
+  ##  and Michael Havrda.
   ##  ================================
   
   #  Load packages
   library(camtrapR)
-  #library(anytime)
   library(tidyverse)
+  library(unmarked)
   
   #  Read in data
   #  Camera trap stations: deploy and removal dates
@@ -56,7 +56,7 @@
   #  Filter dates to specific range (06/01/2018 - 08/31/2018)
   images_summer18 <- images %>%
     filter(Date > "2018-05-31") %>%
-    filter(Date < "2018-09-01") %>%
+    filter(Date < "2018-09-30") %>%
     select("Image", "File", "Cell_ID", "Camera_ID", "Date", "Time", "Species")
   
   
@@ -149,7 +149,7 @@
   
   #  Create detection history for a single species
   #  Combine date:time into a column to create detection histories
-  #  For now going with 14 day sampling occasions
+  #  For now going with 7 day sampling occasions
   images_summer18$DateTimeOriginal <- with(images_summer18, as.POSIXct(paste(Date, Time), format = "%Y-%m-%d %H:%M:%S"))
   
   head(images_summer18)
@@ -161,7 +161,7 @@
                                    speciesCol = "Species",
                                    recordDateTimeCol = "DateTimeOriginal",
                                    species = "Cougar",
-                                   occasionLength = 14, # number of days
+                                   occasionLength = 7,  # number of days
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
@@ -176,7 +176,7 @@
                                    speciesCol = "Species",
                                    recordDateTimeCol = "DateTimeOriginal",
                                    species = "Mule Deer",
-                                   occasionLength = 14, # number of days
+                                   occasionLength = 7, # number of days
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
