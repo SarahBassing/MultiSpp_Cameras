@@ -130,6 +130,11 @@
   #  Exclude 3rd reprojected coordiantes in used data
   cougar_used_dem <- used_locs[,c(2:11,14)]
   
+  #  Save
+  write.csv(cougar_used_dem, "input/cougar_used_dem.csv")
+  write.csv(cougar_avail_dem, "input/cougar_avail_dem.csv")
+  
+  
   
   #  Attempt to extract terrain ruggedness for these locations as well
   #  Terrain Ruggedness Index
