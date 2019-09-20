@@ -48,9 +48,9 @@
   projection(cougar_nlcd_proj)
   projection(available_nlcd_proj)
   
-  plot(cougar_nlcd_proj)
-  plot(landcov, add = TRUE)
-  plot(cougar_nlcd_proj, add = TRUE, pch = 19, col = "red")
+  # plot(cougar_nlcd_proj)
+  # plot(landcov, add = TRUE)
+  # plot(cougar_nlcd_proj, add = TRUE, pch = 19, col = "red")
 
   #  Convert SpatialPointsDataFrames into a regular old dataframe
   used_locs <- as.data.frame(cougar_nlcd_proj) 
@@ -74,21 +74,20 @@
   
   avail_locs$NLCD[1:5]
   head(avail_locs)
-  cougar_avail_landcov <- avail_locs
-  
-  #  Exclude 3rd reprojected coordiantes in used data
-  cougar_used_landcov <- used_locs[,c(2:11,14)]
   
   #  Save
-  write.csv(cougar_used_landcov, "input/cougar_used_landcov.csv")
-  write.csv(cougar_avail_landcov, "input/cougar_avail_landcov.csv")
+  cougar_avail_landcov <- avail_locs
+  #  Exclude 3rd reprojected coordiantes in used data
+  cougar_used_landcov <- used_locs[,c(2:11,14)]
+  # write.csv(cougar_used_landcov, "input/cougar_used_landcov.csv")
+  # write.csv(cougar_avail_landcov, "input/cougar_avail_landcov.csv")
   
   
   
   #  Elevation
   #  =====================
-  #  Read in DEM (30x30 m resolution)
-  DEM <- raster("G:/My Drive/1 Dissertation/Analyses/Shapefiles/WA DEM rasters/wa_dem1.img") # 2011 land cover
+  #  Read in DEM (30 x 30 m resolution when it's not in longlat)
+  DEM <- raster("G:/My Drive/1_Repositories/MultiSpp_Cameras/Shapefiles/WA_DEM/wa_dem1.img") # 2011 land cover
   #  Check resolution & projection
   res(DEM)
   demproj <- projection(DEM)
@@ -104,9 +103,9 @@
   projection(cougar_dem_proj)
   projection(available_dem_proj)
   
-  plot(cougar_dem_proj)
-  plot(DEM, add = TRUE)
-  plot(cougar_dem_proj, add = TRUE, pch = 19, col = "red")
+  # plot(cougar_dem_proj)
+  # plot(DEM, add = TRUE)
+  # plot(cougar_dem_proj, add = TRUE, pch = 19, col = "red")
   
   #  Extract covaraite data at used & available locations
   #  ====================================================
@@ -132,26 +131,52 @@
   
   avail_locs$elev[1:5]
   head(avail_locs)
+
+  #  Save
   cougar_avail_dem <- avail_locs[,c(2:8)]
-  
   #  Exclude 3rd reprojected coordiantes in used data
   cougar_used_dem <- used_locs[,c(2:11,14)]
-  
-  #  Save
   write.csv(cougar_used_dem, "input/cougar_used_dem.csv")
   write.csv(cougar_avail_dem, "input/cougar_avail_dem.csv")
   
   
   
   #  Attempt to extract terrain ruggedness for these locations as well
+  ####  I HAVE NO IDEA IF THIS IS GOING TO WORK!!!  ####
+  
   #  Terrain Ruggedness Index
-  require(spatialEco)
-  tri <- spatialEco::tri(DEM)  #  OH MY GOD THIS IS SLOW... maybe not for right now
+  TRI <- terrain(DEM, opt = "TRI", filename = "TRI.img")
+  
+  #  Create new df based on dem projection
+  used_locs <- as.data.frame(cougar_dem_proj) 
+  avail_locs <- as.data.frame(available_dem_proj)
+  
+  #  Extract ruggedness values at geographic locations
+  used_locs$TRI <- extract(x = TRI, y = used_locs[,12:13])
+  avail_locs$TRI <- extract(x = TRI, y = avail_locs[,6:7])
+  
+  #  Check output
+  used_locs$TRI[1:5]
+  head(used_locs)
+  
+  avail_locs$TRI[1:5]
+  head(avail_locs)
+  
+  #  Save
+  cougar_avail_TRI <- avail_locs[,c(2:8)]
+  #  Exclude 3rd reprojected coordiantes in used data
+  cougar_used_TRI <- used_locs[,c(2:11,14)]
+  write.csv(cougar_used_TRI, "input/cougar_used_TRI.csv")
+  write.csv(cougar_avail_TRI, "input/cougar_avail_TRI.csv")
+  
+  # require(spatialEco)
+  # tri <- spatialEco::tri(DEM)
   
   
   
   #  Road Density
   #  =============================
+  #  Road density = total length of roads (in km) per 1 sq. km
   #  Read in road density raster (999 x 999 m resolution) - created by L. Satterfield
   rd_dnsty <- raster("G:/My Drive/1_Repositories/MultiSpp_Cameras/Shapefiles/Roads/roaddensity/road.density_km2_IMG.img")
   res(rd_dnsty)
