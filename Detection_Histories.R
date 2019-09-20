@@ -36,7 +36,7 @@
     filter(Species != "") %>%
     filter(Species != "--") %>%
     #  Thin down the number of columns
-    select("File", "Date", "Time", "CameraLocation", "Service", "Empty", "Animal", 
+    dplyr::select("File", "Date", "Time", "CameraLocation", "Service", "Empty", "Animal", 
            "Human", "Vehicle", "Species", "HumanActivity", "Count", "Comments") %>%
     #  Reformat dates, add extra column for Cell_ID, & repeat CameraLocation
     mutate(
@@ -53,11 +53,11 @@
   #  Create unique name for each individual image file
   images$Image <- str_c(images$Cell_ID, images$Camera_ID, images$File, images$ID,  sep = "-")
   
-  #  Filter dates to specific range (06/01/2018 - 08/31/2018)
+  #  Filter dates to specific range (06/01/2018 - 09/30/2018)
   images_summer18 <- images %>%
     filter(Date > "2018-05-31") %>%
     filter(Date < "2018-09-30") %>%
-    select("Image", "File", "Cell_ID", "Camera_ID", "Date", "Time", "Species")
+    dplyr::select("Image", "File", "Cell_ID", "Camera_ID", "Date", "Time", "Species")
   
   
   #  Camera station data
@@ -80,24 +80,25 @@
       Problem2_to = as.Date(Problem2_to, format = "%m/%d/%Y")
     )
 
-  #  Were any stations established after time window of interest (08/31/2018)
-  late_deploy <- stations[stations$Set_date > "2018-08-31",]
+  #  Were any stations established after time window of interest (09/30/2018)
+  late_deploy <- stations[stations$Set_date > "2018-09-30",]
   print(late_deploy)
   
-  #  Remove stations that were established after time window of interest (08/31/2018)
-  stations <- stations[stations$Set_date < "2018-08-31",]
+  #  Remove stations that were established after time window of interest (09/30/2018)
+  stations <- stations[stations$Set_date < "2018-09-30",]
   
   head(stations)
   str(stations)
   is.na(stations$Pull_date)
   
-  #write.csv(stations, "./Data/OK_cam_stations.csv")
+   # write.csv(stations, "./Data/OK_cam_stations.csv")
 
   
   #  camtrapR time!
   #  =========================================
   #  Calucate number of trap nights per camera
   trapnights <- as.numeric(stations$Pull_date - stations$Set_date)
+  #trapnights <- as.numeric("2018-09-30" - "2018-06-12")  # doesn't work
   
   #  Create camera operation table- needed for creating deteciton histories
   #  Creates a matrix with each camera and date it was deployed
@@ -142,7 +143,7 @@
   cam_dat <- as.data.frame(cbind(n2, cells2, cells2))
   colnames(cam_dat) <- c("station_n", "Cell_ID", "Station_cells")
   #  Join dataframes by Cell_ID- should line up perfectly
-  #  NA's indicate mismatch
+  #  NA's in "Cell_ID" or "Station_cells" indicate mismatch
   matching <- cam_dat %>%
     full_join(img_dat, by = "Cell_ID")
   
@@ -167,7 +168,7 @@
                                    timeZone = "US/Pacific",
                                    writecsv = T,
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
-  head(DetHist_coug)
+  # head(DetHist_coug)
   
   #  Mule deer DH
   DetHist_mule <- detectionHistory(recordTable = images_summer18,
@@ -182,14 +183,7 @@
                                    timeZone = "US/Pacific",
                                    writecsv = T,
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
-  head(DetHist_mule)
-
-  
-  #  Questions:  How do I truncate the encounter histories so they end in Aug?
-  
-  
-  
-  
+  # head(DetHist_mule)
   
   #  Wolf DH
   DetHist_wolf <- detectionHistory(recordTable = images_summer18,
@@ -198,13 +192,13 @@
                                    speciesCol = "Species",
                                    recordDateTimeCol = "DateTimeOriginal",
                                    species = "Wolf",
-                                   occasionLength = 14, # number of days
+                                   occasionLength = 7, # number of days
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
                                    writecsv = T,
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
-  head(DetHist_wolf)
+  #head(DetHist_wolf)
   
   #  White-tailed deer DH
   DetHist_wtd <- detectionHistory(recordTable = images_summer18,
@@ -213,13 +207,13 @@
                                   speciesCol = "Species",
                                   recordDateTimeCol = "DateTimeOriginal",
                                   species = "White-tailed Deer",
-                                  occasionLength = 14, # number of days
+                                  occasionLength = 7, # number of days
                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                   includeEffort = F,   # fills in NA when station was malfunctioning
                                   timeZone = "US/Pacific",
                                   writecsv = T,
                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
-  head(DetHist_wtd)
+  # head(DetHist_wtd)
   
   #  Elk DH
   DetHist_elk <- detectionHistory(recordTable = images_summer18,
@@ -228,13 +222,13 @@
                                   speciesCol = "Species",
                                   recordDateTimeCol = "DateTimeOriginal",
                                   species = "Elk",
-                                  occasionLength = 14, # number of days
+                                  occasionLength = 7, # number of days
                                   day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                   includeEffort = F,   # fills in NA when station was malfunctioning
                                   timeZone = "US/Pacific",
                                   writecsv = T,
                                   outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
-  head(DetHist_elk)
+  # head(DetHist_elk)
   
   #  Black bear DH
   DetHist_blkbear <- detectionHistory(recordTable = images_summer18,
@@ -243,13 +237,13 @@
                                    speciesCol = "Species",
                                    recordDateTimeCol = "DateTimeOriginal",
                                    species = "Black Bear",
-                                   occasionLength = 14, # number of days
+                                   occasionLength = 7, # number of days
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
                                    writecsv = T,
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
-  head(DetHist_blkbear)
+  # head(DetHist_blkbear)
   
   #  Moose DH
   DetHist_moose <- detectionHistory(recordTable = images_summer18,
@@ -258,13 +252,13 @@
                                    speciesCol = "Species",
                                    recordDateTimeCol = "DateTimeOriginal",
                                    species = "Moose",
-                                   occasionLength = 14, # number of days
+                                   occasionLength = 7, # number of days
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
                                    writecsv = T,
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
-  head(DetHist_moose)
+  # head(DetHist_moose)
   
   #  Coyote DH
   DetHist_coy <- detectionHistory(recordTable = images_summer18,
@@ -273,13 +267,13 @@
                                    speciesCol = "Species",
                                    recordDateTimeCol = "DateTimeOriginal",
                                    species = "Coyote",
-                                   occasionLength = 14, # number of days
+                                   occasionLength = 7, # number of days
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
                                    writecsv = T,
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
-  head(DetHist_coy)
+  # head(DetHist_coy)
   
   #  Bobcat DH
   DetHist_bobcat <- detectionHistory(recordTable = images_summer18,
@@ -288,11 +282,27 @@
                                    speciesCol = "Species",
                                    recordDateTimeCol = "DateTimeOriginal",
                                    species = "Bobcat",
-                                   occasionLength = 14, # number of days
+                                   occasionLength = 7, # number of days
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
                                    writecsv = T,
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
-  head(DetHist_bobcat)
+  # head(DetHist_bobcat)
+  
+  
+  
+  #  Occupancy models with unmarked
+  #  ==============================
+  
+  #  Read in detection histories as csv
+  cougar_dh <- read.csv("Output/Cougar__detection_history__no_effort__7_days_per_occasion__occasionStart0h__first_day_2018-06-13__2019-09-20.csv")
+  covs <- read.csv("Input/cam_covs.csv")
+  
+  #  Trim down detection history
+  #  Only need occasions1 - 16 (i.e., weeks of June 13 - Oct 3, 2018)
+  cougar_dh <- cougar_dh[,1:17]
+  
+  #  Merge detection history with covariates dataframe
+  cougdat <- merge(cougar_dh, covs, by.x = "X", by.y = "Cell_ID")
   
