@@ -29,6 +29,7 @@
   rd_dnsty <- raster("Shapefiles/Roads/roaddensity/road.density_km2_IMG.img")
   landcov <- raster("Shapefiles/National_Land_Cover_Database/land_use_land_cover_NLCD_wa/land_use_land_cover/nlcd_wa_utm10.tif") # 2011 land cover
   DEM <- raster("Shapefiles/WA_DEM/wa_dem1.img")
+  TRI <- raster("Shapefiles/Terrain_Ruggedness/TRI.img")
   
   #  Make camera stations spatial
   stations_sf <- st_as_sf(cam_stations, coords = 4:5, crs = "+proj=longlat +ellps=WGS84") %>%
@@ -61,16 +62,20 @@
   #  1.5  Road Density
   #  =============================
   #  Resolution: 999 x 999 m
+  #  density of roads is in meters of road per 1000 x 1000 m cell
+  #  Need to divide by 1000 to put in km2
   
   #  Make camera staions spdf non-spatial
   stations_rddnsty_df <- as.data.frame(stations_spdf)
   
   #  Extract land cover type at location of each camera station
-  stations_rddnsty_df$rd_dnsty <- raster::extract(x = rd_dnsty, y = stations_rddnsty_df[,3:4])
+  stations_rddnsty_df$rd_dnsty_m <- raster::extract(x = rd_dnsty, y = stations_rddnsty_df[,3:4])
+  #  Convert measuremetn units to square kilometers
+  stations_rddnsty_df$rd_dnsty_km <- stations_rddnsty_df$rd_dnsty_m/1000
   head(stations_rddnsty_df)
   
   # plot(stations_spdf)
-  # plot(rd_dnsty, add = TRUE)
+  # plot(rd_dnsty_km, add = TRUE)
   # plot(stations_spdf, add = TRUE, pch = 19, col = "red")
   
   #  2. Distance to nearest stream
@@ -81,6 +86,10 @@
   #  Find closest stream (minimum distance) to each point & added to dataframe
   stations_sf$hydro_OK_dist <- apply(hydro_OK_cams, 2, min)
   stations_sf$hydro_Ch_dist <- apply(hydro_Ch_cams, 2, min)
+  
+  #  NEXT STEP!!! For each camera station I only need one value between hydro_OK_cams
+  #  and hydro_Ch_cams (same for collar data) but I'm not sure how to look at 2
+  #  different columns and retain only the smaller value for the final covariate
   
   head(stations_sf)
   
@@ -140,19 +149,15 @@
   
   #  5. Terrain Ruggedness Index 
   #  =============================
-  #  assuming creating as TRI file from the DEM worked
-  
-  #  Load TRI raster
-  DEM <- raster("TRI.img") # wherever this got saved
-  
-  demproj <- projection(DEM)
-  stations_tri_spdf <- spTransform(stations_spdf, crs(demproj))
-  
+  #  Using TRI generated from DEM (30 x 30 m resolution)
+  triproj <- projection(TRI)
+  stations_tri_spdf <- spTransform(stations_spdf, crs(triproj))
+
   #  Turn spdf into df
   stations_tri_df <- as.data.frame(stations_tri_spdf)
   head(stations_tri_df)
   #  Extract elevation at location of each camera station
-  stations_tri_df$elev <- extract(x = DEM, y = stations_tri_df[,3:4])
+  stations_tri_df$TRI <- extract(x = TRI, y = stations_tri_df[,3:4])
   head(stations_tri_df)
   
   
@@ -163,10 +168,20 @@
   #  6. Burn severity???
   
   
-  #  Take all covariates and merge into a single df
-  cam_covs <- stations_lc_df %>%
-    left_join(stations_dem_df, by = c("Cell_ID", "Camera_ID", "UTM_X", "UTM_Y")) %>%
-    left_join(stations_rddnsty_df, by = c("Cell_ID", "Camera_ID", "UTM_X", "UTM_Y"))
+  #  Merge into a single df: site-level covariates for occupancy models
+  stations_df <- as.data.frame(stations_sf)
+  cam_covs <- stations_lc_df[,c(1:2, 5)] %>%
+    cbind(stations_dem_df$elev) %>%
+    cbind(stations_tri_df$TRI) %>%
+    cbind(stations_rddnsty_df$rd_dnsty_km) %>%
+    cbind(stations_df$road_dist) %>%
+    cbind(stations_df$hydro_OK_dist) %>%
+    cbind(stations_df$hydro_Ch_dist)
+  colnames(cam_covs) <- c("Cell_ID", "Camera_ID", "NLCD", "Elev", "Ruggedness",
+                          "Rd_Density", "Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch") 
+  
+  head(cam_covs)
+  
+  write.csv(cam_covs, "Input/cam_covs.csv")
   
   
-  # now to add the sf files
