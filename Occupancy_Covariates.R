@@ -26,9 +26,9 @@
   hydro_Ch <- st_read("Shapefiles/Hydro/hydro_Ch.shp", crs = "+init=epsg:2855") 
   
   #  Rasters
-  rd_dnsty <- raster("G:/My Drive/1_Repositories/MultiSpp_Cameras/Shapefiles/Roads/roaddensity/road.density_km2_IMG.img")
-  landcov <- raster("G:/My Drive/1 Dissertation/Analyses/Shapefiles/USDA shapefiles/National_Land_Cover_Database/land_use_land_cover_NLCD_wa/land_use_land_cover/nlcd_wa_utm10.tif") # 2011 land cover
-  DEM <- raster("G:/My Drive/1 Dissertation/Analyses/Shapefiles/WA DEM rasters/wa_dem1.img") # 2011 land cover
+  rd_dnsty <- raster("Shapefiles/Roads/roaddensity/road.density_km2_IMG.img")
+  landcov <- raster("Shapefiles/National_Land_Cover_Database/land_use_land_cover_NLCD_wa/land_use_land_cover/nlcd_wa_utm10.tif") # 2011 land cover
+  DEM <- raster("Shapefiles/WA_DEM/wa_dem1.img")
   
   #  Make camera stations spatial
   stations_sf <- st_as_sf(cam_stations, coords = 4:5, crs = "+proj=longlat +ellps=WGS84") %>%
@@ -50,6 +50,8 @@
   road_dist_cams <- st_distance(y = stations_sf, x = roads_OK)
   #  Find closest road (minimum distance) to each point & added to dataframe
   stations_sf$road_dist <- apply(road_dist_cams, 2, min)
+  
+  head(stations_sf)
   
   # ggplot() +
   #   geom_sf(data = OK) +
@@ -80,13 +82,15 @@
   stations_sf$hydro_OK_dist <- apply(hydro_OK_cams, 2, min)
   stations_sf$hydro_Ch_dist <- apply(hydro_Ch_cams, 2, min)
   
+  head(stations_sf)
+  
   # ggplot() +
   #   geom_sf(data = OK) +
   #   geom_sf(data = hydro_OK) +
   #   geom_sf(data = hydro_Ch) +
   #   geom_sf(data = stations_sf, aes(color = "Cell_ID"))
   
-  #  3. Land cover (National Land Cover Database)
+  #  3. Land cover (2011 National Land Cover Database)
   #  =============================
   #  Resolution: 30 x 30 m
   
@@ -134,6 +138,25 @@
   # plot(DEM, add = TRUE)
   # plot(stations_dem_spdf, add = TRUE, pch = 19, col = "red")
   
+  #  5. Terrain Ruggedness Index 
+  #  =============================
+  #  assuming creating as TRI file from the DEM worked
+  
+  #  Load TRI raster
+  DEM <- raster("TRI.img") # wherever this got saved
+  
+  demproj <- projection(DEM)
+  stations_tri_spdf <- spTransform(stations_spdf, crs(demproj))
+  
+  #  Turn spdf into df
+  stations_tri_df <- as.data.frame(stations_tri_spdf)
+  head(stations_tri_df)
+  #  Extract elevation at location of each camera station
+  stations_tri_df$elev <- extract(x = DEM, y = stations_tri_df[,3:4])
+  head(stations_tri_df)
+  
+  
+  
   #  5. NDVI???
   
   
@@ -141,3 +164,9 @@
   
   
   #  Take all covariates and merge into a single df
+  cam_covs <- stations_lc_df %>%
+    left_join(stations_dem_df, by = c("Cell_ID", "Camera_ID", "UTM_X", "UTM_Y")) %>%
+    left_join(stations_rddnsty_df, by = c("Cell_ID", "Camera_ID", "UTM_X", "UTM_Y"))
+  
+  
+  # now to add the sf files
