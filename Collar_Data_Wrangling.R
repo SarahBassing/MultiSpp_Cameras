@@ -329,7 +329,10 @@
   
   #  1.5  Road density (continuous)
   #  ==============================
-  
+  #  Road density = total length of roads (in km) per 1 sq. km
+  #  Resolution: 999 x 999 m
+  cougar_used_rddnsty <- read.csv("./Input/cougar_used_rddnsty.csv")
+  cougar_avail_rddnsty <- read.csv("./Input/cougar_avail_rddnsty.csv")
   
   
   #  2. Distance to water (continuous)
