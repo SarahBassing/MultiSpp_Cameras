@@ -49,8 +49,9 @@
   ####  Filter and prep data for spatial work  
   #  ========================================
   
-  #  I only want collar data from 06/01/2018 - 09/30/2018 for now
-  cougars_summer18 <- cougars[cougars$DateTime > "2018-05-31 23:59:59" & cougars$DateTime < "2018-10-01 00:00:00", ]
+  #  I only want collar data from 06/13/2018 - 09/30/2018 for now
+  #  First camera in OK went out 06/13/2018
+  cougars_summer18 <- cougars[cougars$DateTime > "2018-06-12 23:59:59" & cougars$DateTime < "2018-10-01 00:00:00", ]
   
   #  Double check that I've filtered the data correctly
   min(cougars_summer18$DateTime); max(cougars_summer18$DateTime)
@@ -74,9 +75,8 @@
     print()
   
   #  Toss location data from animals with <20 locations in summer 2018
-  #  i.e., MVC226F
-  cougars_summer18 <- cougars_summer18[cougars_summer18$Animal_ID != "MVC226F",]
-  #  & cougars_summer18$Animal_ID != "NEC108M"  # expanding date range gave him >100 extra points
+  #  Actually don't need to do this anymore due to change in date range
+  #cougars_summer18 <- cougars_summer18[cougars_summer18$Animal_ID != "MVC226F" & cougars_summer18$Animal_ID != "NEC108M",]
   
   #  Review and save (csv, sf, spdf)
   head(cougars_summer18)
@@ -97,11 +97,12 @@
     print()
   
   #  Recount number of points per individual animal
-  n_cougar_pts <- cougars_summer18 %>%
-    group_by(Animal_ID) %>%
-    tally() %>%
-    as.data.frame() %>%
-    ungroup()
+  #  Only need this if animals were excluded above
+  # n_cougar_pts <- cougars_summer18 %>%
+  #   group_by(Animal_ID) %>%
+  #   tally() %>%
+  #   as.data.frame() %>%
+  #   ungroup()
   
   
   
@@ -333,6 +334,10 @@
   #  Resolution: 999 x 999 m
   cougar_used_rddnsty <- read.csv("./Input/cougar_used_rddnsty.csv")
   cougar_avail_rddnsty <- read.csv("./Input/cougar_avail_rddnsty.csv")
+  #  Convert measuremetn units to square kilometers
+  cougar_used_rddnsty$rd_dnsty_km <- cougar_used_rddnsty$rd_dnsty/1000
+  cougar_avail_rddnsty$rd_dnsty_km <- cougar_avail_rddnsty$rd_dnsty/1000
+  head(cougar_used_rddnsty)
   
   
   #  2. Distance to water (continuous)
@@ -351,16 +356,16 @@
   
   #  Measure distance btwn each point and every stream in study area...
   #  this takes AWHILE
-  hydro_OK_dist_coug <- st_distance(y = cougar1_sf, x = hydro_OK)
-  hydro_Ch_dist_coug <- st_distance(y = cougar1_sf, x = hydro_Ch)
-  hydro_OK_dist_rnd <- st_distance(y = rndpts_sf, x = hydro_OK) 
-  hydro_Ch_dist_rnd <- st_distance(y = rndpts_sf, x = hydro_Ch) 
+  hydro_OK_dist_coug <- st_distance(y = coug18_used_sf, x = hydro_OK)
+  hydro_Ch_dist_coug <- st_distance(y = coug18_used_sf, x = hydro_Ch)
+  hydro_OK_dist_rnd <- st_distance(y = coug18_avail_sf, x = hydro_OK) 
+  hydro_Ch_dist_rnd <- st_distance(y = coug18_avail_sf, x = hydro_Ch) 
   
   #  Find closest stream (minimum distance) to each point & added to dataframe
-  cougar1_sf$hydro_OK_dist <- apply(hydro_OK_dist_coug, 2, min)
-  cougar1_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_coug, 2, min)  
-  rndpts_sf$hydro_OK_dist <- apply(hydro_OK_dist_rnd, 2, min)
-  rndpts_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_rnd, 2, min)
+  coug18_used_sf$hydro_OK_dist <- apply(hydro_OK_dist_coug, 2, min)
+  coug18_used_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_coug, 2, min)  
+  coug18_avail_sf$hydro_OK_dist <- apply(hydro_OK_dist_rnd, 2, min)
+  coug18_avail_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_rnd, 2, min)
   
   #  Find shortest distance btwn each point and streams in different counties 
   #  and only save that one to df (Only need one measurement per point)
@@ -421,9 +426,13 @@
   cougar_used_dem <- read.csv("input/cougar_used_dem.csv")
   cougar_avail_dem <- read.csv("input/cougar_avail_dem.csv")
   
+  cougar_used_tri <- read.csv("input/cougar_used_TRI.csv")
+  cougar_avail_tri <- read.csv("input/cougar_used_TRI.csv")
+
   
   
   
+  #  OTHERS?
   #  -NDVI (continuous)
   #  -burn severity and/or perimeter (categorical)
   #  -percent forest cover (continuous)  
@@ -431,29 +440,72 @@
   
   ####  Input data for model  ####
   #  =============================
-  #  "used" = 1, "available" = 0
-  used <- rep(1, n_studyarea_pts[1,2])
-  avail <- rep(0, n_rnd_pts[1,2])
   
-  #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
-  #  Matrix for regression
-  dat <- as.data.frame(rep("MVC202F", n_cougar_pts[n_cougar_pts$Animal_ID == "MVC202F", 2]))
-  dat$used <- used
-  dat$road_dist <- cougar1_sf$road_dist
-  colnames(dat) <- c("Animal_ID", "used", "road_dist")
+  #  Combine covariate data into a single df
+  #  Used 
+  coug18_used_covs <- cougars_summer18[,c(2:10)] %>%
+    cbind(cougar_used_landcov$NLCD) %>%
+    cbind(cougar_used_dem$elev) %>%
+    cbind(cougar_used_tri$TRI) %>%
+    cbind(cougar_used_rddnsty$rd_dnsty_km) #%>%
+    cbind(coug18_used_sf$road_dist) %>%
+    cbind(coug18_used_sf$hydro_OK_dist) %>%
+    cbind(coug18_used_sf$hydro_Ch_dist)
+  colnames(coug18_used_covs) <- c("Region", "Animal_ID", "Collar_ID", "TimeStamp", 
+                          "DateTime", "location_long", "location_lat", 
+                          "Longitude", "Latitude", "NLCD", "Elev", "TRI", 
+                          "Rd_Density_km", "Nearest_Rd", "Nearest_H20_OK", 
+                          "Nearest_H20_Ch") 
   
-  #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
-  available <- as.data.frame(rep("MVC202F", 10000))
-  available$used <- avail
-  available$road_dist <- rndpts_sf$FAKE_road_dist
-  colnames(available) <- c("Animal_ID", "used", "road_dist")
+  head(coug18_used_covs)
   
-  dat <- rbind(dat, available)
+  #  Available
+  coug_18_avail_covs <- coug18_avail_df %>%
+    cbind(cougar_avail_landcov$NLCD) %>%
+    cbind(cougar_avail_dem$elev) %>%
+    cbind(cougar_avail_tri$TRI) %>%
+    cbind(cougar_avail_rddnsty$rd_dnsty_km) 
+    cbind(coug18_avail_sf$road_dist) %>%
+    cbind(coug18_avail_sf$hydro_OK_dist) %>%
+    cbind(coug18_avail_sf$hydro_Ch_dist)
+  colnames(coug_18_avail_covs) <- c("Animal_ID", "Region","Longitude", "Latitude", 
+                                    "NLCD", "Elev", "TRI", "Rd_Density_km", 
+                                    "Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch") 
   
-  #  Standardize covariates
-  standard_dat <- scale(dat$road_dist, center = TRUE, scale = TRUE)
+  head(coug_18_avail_covs)
   
-  dat$road_dist_z <- standard_dat
+  
+  write.csv(coug18_used_covs, "Input/coug18_used_covs.csv")
+  write.csv(coug_18_avail_covs, "Input/coug_18_avail_covs.csv")
+  
+  
+  #  Combine covariate data for available locations
+  
+  # #  Generate used-available response variable
+  # #  "used" = 1, "available" = 0
+  # used <- rep(1, n_studyarea_pts[1,2])
+  # avail <- rep(0, n_rnd_pts[1,2])
+  # 
+  # 
+  # #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
+  # #  Matrix for regression
+  # dat <- as.data.frame(rep("MVC202F", n_cougar_pts[n_cougar_pts$Animal_ID == "MVC202F", 2]))
+  # dat$used <- used
+  # dat$road_dist <- cougar1_sf$road_dist
+  # colnames(dat) <- c("Animal_ID", "used", "road_dist")
+  # 
+  # #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
+  # available <- as.data.frame(rep("MVC202F", 10000))
+  # available$used <- avail
+  # available$road_dist <- rndpts_sf$FAKE_road_dist
+  # colnames(available) <- c("Animal_ID", "used", "road_dist")
+  # 
+  # dat <- rbind(dat, available)
+  # 
+  # #  Standardize covariates
+  # standard_dat <- scale(dat$road_dist, center = TRUE, scale = TRUE)
+  # 
+  # dat$road_dist_z <- standard_dat
   
   #write.csv(dat, file = "./input/dat.csv")
   #save(dat, file = "input/dat.RData")
