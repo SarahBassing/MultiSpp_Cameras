@@ -79,15 +79,15 @@
   cougar_avail_landcov <- avail_locs
   #  Exclude 3rd reprojected coordiantes in used data
   cougar_used_landcov <- used_locs[,c(2:11,14)]
-  # write.csv(cougar_used_landcov, "input/cougar_used_landcov.csv")
-  # write.csv(cougar_avail_landcov, "input/cougar_avail_landcov.csv")
+  write.csv(cougar_used_landcov, "input/cougar_used_landcov.csv")
+  write.csv(cougar_avail_landcov, "input/cougar_avail_landcov.csv")
   
   
   
   #  Elevation
   #  =====================
   #  Read in DEM (30 x 30 m resolution when it's not in longlat)
-  DEM <- raster("G:/My Drive/1_Repositories/MultiSpp_Cameras/Shapefiles/WA_DEM/wa_dem1.img") # 2011 land cover
+  DEM <- raster("G:/My Drive/1_Repositories/MultiSpp_Cameras/Shapefiles/WA_DEM/wa_dem1.img")
   #  Check resolution & projection
   res(DEM)
   demproj <- projection(DEM)
@@ -140,12 +140,10 @@
   write.csv(cougar_avail_dem, "input/cougar_avail_dem.csv")
   
   
-  
-  #  Attempt to extract terrain ruggedness for these locations as well
-  ####  I HAVE NO IDEA IF THIS IS GOING TO WORK!!!  ####
-  
-  #  Terrain Ruggedness Index
-  TRI <- terrain(DEM, opt = "TRI", filename = "TRI.img")
+  #  Terrain Ruggedness Index (TRI)
+  #  Generate TRI from DEM
+  #TRI <- terrain(DEM, opt = "TRI", filename = "TRI.img")
+  TRI <- raster("G:/My Drive/1_Repositories/MultiSpp_Cameras/Shapefiles/Terrain_Ruggedness/TRI.img")
   
   #  Create new df based on dem projection
   used_locs <- as.data.frame(cougar_dem_proj) 
@@ -203,6 +201,8 @@
   used_locs$rd_dnsty <- extract(x = rd_dnsty, y = used_locs[,10:11])
   avail_locs$rd_dnsty <- extract(x = rd_dnsty, y = avail_locs[,4:5])
   
+  ####  DON'T FORGET TO CHANGE UNITS TO SQ KM!!!!  Divide by 1000  ####
+  
   #  Check output
   used_locs$rd_dnsty[1:5]
   head(used_locs)
@@ -216,4 +216,42 @@
   #  Save
   write.csv(cougar_used_rddnsty, "input/cougar_used_rddnsty.csv")
   write.csv(cougar_avail_rddnsty, "input/cougar_avail_rddnsty.csv")
+  
+  
+  
+  #  NDVI
+  #  Nead to convert individual 16-day files from HDF4 format to GEOtiff
+  #  No idea what projection these will come in
+  #  Code from (https://stackoverflow.com/questions/36772341/reading-hdf-files-into-r-and-converting-them-to-geotiff-rasters)
+  
+  library(gdalUtils)
+  # setwd("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1")
+  gdalinfo("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
+  sds <- get_subdatasets("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
+  sds
+  gdal_translate(sds[1], dst_dataset = "MOD13Q1_A04.tif")
+  rast <- raster("MOD13Q1_A04.tif")
+  plot(rast)
+  MODres <- res(rast)
+  #### First get everything converted to .tif
+  #### Second make a raster stack of all the .tif files
+  #### Just reproject location data to match .tif files
+  #### Extract from there
+  #### Worry about reporjecting NDVI layers later
+  
+  # rddnsty_prj <- projection(rd_dnsty)
+  # tst <- projectRaster(rast, res = MODres, crs = rddnsty_prj)
+  # plot(tst)
+  #  Have I told you how much I hate NDVI?
+  
+  #  For lots of files
+  files <- dir(pattern = ".hdf")
+  filename <- substr(files,11,14)
+  filename <- paste0("NPP", filename, ".tif")
+  filename
+  i <- 1
+  for (i in 1:15){
+    sds <- get_subdatasets(files[i])
+    gdal_translate(sds[1], dst_dataset = filename[i])
+  }
   
