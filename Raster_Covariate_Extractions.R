@@ -224,34 +224,34 @@
   #  No idea what projection these will come in
   #  Code from (https://stackoverflow.com/questions/36772341/reading-hdf-files-into-r-and-converting-them-to-geotiff-rasters)
   
-  library(gdalUtils)
-  # setwd("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1")
-  gdalinfo("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
-  sds <- get_subdatasets("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
-  sds
-  gdal_translate(sds[1], dst_dataset = "MOD13Q1_A04.tif")
-  rast <- raster("MOD13Q1_A04.tif")
-  plot(rast)
-  MODres <- res(rast)
-  #### First get everything converted to .tif
-  #### Second make a raster stack of all the .tif files
-  #### Just reproject location data to match .tif files
-  #### Extract from there
-  #### Worry about reporjecting NDVI layers later
-  
-  # rddnsty_prj <- projection(rd_dnsty)
-  # tst <- projectRaster(rast, res = MODres, crs = rddnsty_prj)
-  # plot(tst)
-  #  Have I told you how much I hate NDVI?
-  
-  #  For lots of files
-  files <- dir(pattern = ".hdf")
-  filename <- substr(files,11,14)
-  filename <- paste0("NPP", filename, ".tif")
-  filename
-  i <- 1
-  for (i in 1:15){
-    sds <- get_subdatasets(files[i])
-    gdal_translate(sds[1], dst_dataset = filename[i])
-  }
-  
+  # library(gdalUtils)
+  # # setwd("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1")
+  # gdalinfo("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
+  # sds <- get_subdatasets("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
+  # sds
+  # gdal_translate(sds[1], dst_dataset = "MOD13Q1_A04.tif")
+  # rast <- raster("MOD13Q1_A04.tif")
+  # plot(rast)
+  # MODres <- res(rast)
+  # #### First get everything converted to .tif
+  # #### Second make a raster stack of all the .tif files
+  # #### Just reproject location data to match .tif files
+  # #### Extract from there
+  # #### Worry about reporjecting NDVI layers later
+  # 
+  # # rddnsty_prj <- projection(rd_dnsty)
+  # # tst <- projectRaster(rast, res = MODres, crs = rddnsty_prj)
+  # # plot(tst)
+  # #  Have I told you how much I hate NDVI?
+  # 
+  # #  For lots of files
+  # files <- dir(pattern = ".hdf")
+  # filename <- substr(files,11,14)
+  # filename <- paste0("NPP", filename, ".tif")
+  # filename
+  # i <- 1
+  # for (i in 1:15){
+  #   sds <- get_subdatasets(files[i])
+  #   gdal_translate(sds[1], dst_dataset = filename[i])
+  # }
+  # 
