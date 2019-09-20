@@ -222,33 +222,33 @@
   
   
   
-  ####  Creating bounding boxes to manipulate spatial data with  
-  #  ==========================================================
-  
-  #  What's the spatial extent of these locations?
-  min(cougars_summer18$Longitude); max(cougars_summer18$Longitude) # x
-  min(cougars_summer18$Latitude); max(cougars_summer18$Latitude)   # y
-  
-  #  Different bounding boxes to expand this extent (for croping shapefiles)
-  
-  #  Full extent including both study areas and then some:
-  #  min and max values based on extent of both study areas and cougar locations
-  #  that went outside the study areas plus a 2000 m buffer beyond that extent
-  #  to capture all covaraite data available within the study
-  full_bbox <- st_bbox(c(xmin = 502659, xmax = 783979.9, ymin = 100808.3, ymax = 222849.8))
-  # 5000 m buffer: xmin = 499659, xmax = 786979.9, ymin = 97808.3, ymax = 225849.8
-  
-  #  OK cougar extent based on summer 2018 collar data
-  min(cougars_summer18$Longitude[cougars_summer18$Region == "MV"]); max(cougars_summer18$Longitude[cougars_summer18$Region == "MV"]) # x
-  min(cougars_summer18$Latitude[cougars_summer18$Region == "MV"]); max(cougars_summer18$Latitude[cougars_summer18$Region == "MV"])   # y
-  #  Cougar specific bbox of OK study area plus 2000 m buffer
-  OK_coug_bbox <- st_bbox(c(xmin = 527199.2, xmax = 590176.2, ymin = 119645, ymax = 222849.8))
-  
-  #  NE cougar extent based on summer 2018 collar data
-  min(cougars_summer18$Longitude[cougars_summer18$Region == "NE"]); max(cougars_summer18$Longitude[cougars_summer18$Region == "NE"]) # x
-  min(cougars_summer18$Latitude[cougars_summer18$Region == "NE"]); max(cougars_summer18$Latitude[cougars_summer18$Region == "NE"])   # y
-  #  Cougar specific bbox of NE study area plus 2000 m buffer
-  NE_coug_bbox <- st_bbox(c(xmin = 679337.3, xmax = 783979.9, ymin = 109497.6, ymax = 195370.5))
+  # ####  Creating bounding boxes to manipulate spatial data with  
+  # #  ==========================================================
+  # 
+  # #  What's the spatial extent of these locations?
+  # min(cougars_summer18$Longitude); max(cougars_summer18$Longitude) # x
+  # min(cougars_summer18$Latitude); max(cougars_summer18$Latitude)   # y
+  # 
+  # #  Different bounding boxes to expand this extent (for croping shapefiles)
+  # 
+  # #  Full extent including both study areas and then some:
+  # #  min and max values based on extent of both study areas and cougar locations
+  # #  that went outside the study areas plus a 2000 m buffer beyond that extent
+  # #  to capture all covaraite data available within the study
+  # full_bbox <- st_bbox(c(xmin = 502659, xmax = 783979.9, ymin = 100808.3, ymax = 222849.8))
+  # # 5000 m buffer: xmin = 499659, xmax = 786979.9, ymin = 97808.3, ymax = 225849.8
+  # 
+  # #  OK cougar extent based on summer 2018 collar data
+  # min(cougars_summer18$Longitude[cougars_summer18$Region == "MV"]); max(cougars_summer18$Longitude[cougars_summer18$Region == "MV"]) # x
+  # min(cougars_summer18$Latitude[cougars_summer18$Region == "MV"]); max(cougars_summer18$Latitude[cougars_summer18$Region == "MV"])   # y
+  # #  Cougar specific bbox of OK study area plus 2000 m buffer
+  # OK_coug_bbox <- st_bbox(c(xmin = 527199.2, xmax = 590176.2, ymin = 119645, ymax = 222849.8))
+  # 
+  # #  NE cougar extent based on summer 2018 collar data
+  # min(cougars_summer18$Longitude[cougars_summer18$Region == "NE"]); max(cougars_summer18$Longitude[cougars_summer18$Region == "NE"]) # x
+  # min(cougars_summer18$Latitude[cougars_summer18$Region == "NE"]); max(cougars_summer18$Latitude[cougars_summer18$Region == "NE"])   # y
+  # #  Cougar specific bbox of NE study area plus 2000 m buffer
+  # NE_coug_bbox <- st_bbox(c(xmin = 679337.3, xmax = 783979.9, ymin = 109497.6, ymax = 195370.5))
   
   
   
