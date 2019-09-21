@@ -25,6 +25,11 @@
   
   #  Combine study area shapefiles to use for extracting spatial data
   WPPP_SA <- st_union(OK, NE)
+  WPPP_fullstudyarea <- as(WPPP_SA, "Spatial")
+  require(rgdal)
+  projection(WPPP_fullstudyarea)
+  writeOGR(WPPP_fullstudyarea, dsn = "Shapefiles/StudyAreaPolygons", 
+           layer = "WPPP_fullstudyarea", driver = "ESRI Shapefile")
   #  What's the bounding box?
   st_bbox(WPPP_SA)
   
