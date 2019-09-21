@@ -17,6 +17,7 @@
   #  ==================================
   #  Camera station data
   cam_stations <- read.csv("./Data/OK_cam_stations.csv")
+  survey_covs <- read.csv("./Data/OK_Camera_Survey_Covariates_18-19.csv")
   
   #  Shapefiles
   OK <- st_read("Shapefiles/StudyAreaPolygons/METHOW_SA.shp") %>%
@@ -27,6 +28,7 @@
   
   #  Rasters
   rd_dnsty <- raster("Shapefiles/Roads/roaddensity/road.density_km2_IMG.img")
+  water_dnsty <- raster("Shapefiles/Hydro/merged_waterdensity_OK.img")
   landcov <- raster("Shapefiles/National_Land_Cover_Database/land_use_land_cover_NLCD_wa/land_use_land_cover/nlcd_wa_utm10.tif") # 2011 land cover
   DEM <- raster("Shapefiles/WA_DEM/wa_dem1.img")
   TRI <- raster("Shapefiles/Terrain_Ruggedness/TRI.img")
@@ -62,7 +64,7 @@
   #  1.5  Road Density
   #  =============================
   #  Resolution: 999 x 999 m
-  #  density of roads is in meters of road per 1000 x 1000 m cell
+  #  Density of roads is in meters of road per 1000 x 1000 m cell
   #  Need to divide by 1000 to put in km2
   
   #  Make camera staions spdf non-spatial
@@ -98,6 +100,27 @@
   #   geom_sf(data = hydro_OK) +
   #   geom_sf(data = hydro_Ch) +
   #   geom_sf(data = stations_sf, aes(color = "Cell_ID"))
+  
+  
+  #  2.5.  Water Density
+  #  ============================
+  #  Resolution 997.4 m x 999 m
+  #  Density of roads is in meters of road per 1000 x 1000 m cell
+  #  Need to divide by 1000 to put in km2
+  
+  #  Make camera staions spdf non-spatial
+  stations_waterdnsty_df <- as.data.frame(stations_spdf)
+  
+  #  Extract land cover type at location of each camera station
+  stations_waterdnsty_df$water_dnsty_m <- raster::extract(x = water_dnsty, y = stations_waterdnsty_df[,3:4])
+  #  Convert measuremetn units to square kilometers
+  stations_waterdnsty_df$water_dnsty_km <- stations_waterdnsty_df$water_dnsty_m/1000
+  head(stations_waterdnsty_df)
+  
+  # plot(stations_spdf)
+  # plot(water_dnsty, add = TRUE)
+  # plot(stations_spdf, add = TRUE, pch = 19, col = "red")
+  
   
   #  3. Land cover (2011 National Land Cover Database)
   #  =============================
@@ -167,18 +190,40 @@
   
   #  6. Burn severity???
   
+  #  7. Survey specific covariates
+  #  Filter out camera stations that don't match current date range
+  srvy_covs <- survey_covs %>%
+    filter(Notes != "burned") %>% 
+    filter(Notes != "currently held hostage") %>%
+    filter(Cell_ID != "OK1474" & Cell_ID != "OK2051")
+  
   
   #  Merge into a single df: site-level covariates for occupancy models
   stations_df <- as.data.frame(stations_sf)
+  
+  #  Double check the site-level and survey-level dfs are going to line up
+  dblcheck <- full_join(stations_df, srvy_covs, by = c("Cell_ID", "Camera_ID"))
+  View(dblcheck)
+  
   cam_covs <- stations_lc_df[,c(1:2, 5)] %>%
     cbind(stations_dem_df$elev) %>%
     cbind(stations_tri_df$TRI) %>%
     cbind(stations_rddnsty_df$rd_dnsty_km) %>%
     cbind(stations_df$road_dist) %>%
+    cbind(stations_waterdnsty_df$water_dnsty_km) %>%
     cbind(stations_df$hydro_OK_dist) %>%
-    cbind(stations_df$hydro_Ch_dist)
+    cbind(stations_df$hydro_Ch_dist) %>%
+    full_join(srvy_covs[,3:28], by = c("Cell_ID", "Camera_ID"))
   colnames(cam_covs) <- c("Cell_ID", "Camera_ID", "NLCD", "Elev", "Ruggedness",
-                          "Rd_Density", "Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch") 
+                          "Rd_Density", "Nearest_Rd", 
+                          "Water_Density", "Nearest_H20_OK", "Nearest_H20_Ch",
+                          "Study_Area", "Camera_Lat", "Camera_Long", 
+                          "Dist_focal_pt", "Monitoring", "Canopy_Cover", 
+                          "Land_mgnt", "Habitat_type", "Height_o1", "Height_o2", 
+                          "Heigh_o3", "Height_o4", "Height_o5", "Height_o6", 
+                          "Height_o7", "Height_o8", "Height_o9", "Height_o10", 
+                          "Height_o11", "Height_o12", "Height_o13", "Height_o14", 
+                          "Height_o15", "Height_o16") 
   
   head(cam_covs)
   
