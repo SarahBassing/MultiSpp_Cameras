@@ -224,34 +224,201 @@
   #  No idea what projection these will come in
   #  Code from (https://stackoverflow.com/questions/36772341/reading-hdf-files-into-r-and-converting-them-to-geotiff-rasters)
   
-  # library(gdalUtils)
-  # # setwd("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1")
-  # gdalinfo("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
-  # sds <- get_subdatasets("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
-  # sds
-  # gdal_translate(sds[1], dst_dataset = "MOD13Q1_A04.tif")
-  # rast <- raster("MOD13Q1_A04.tif")
-  # plot(rast)
-  # MODres <- res(rast)
-  # #### First get everything converted to .tif
-  # #### Second make a raster stack of all the .tif files
-  # #### Just reproject location data to match .tif files
-  # #### Extract from there
-  # #### Worry about reporjecting NDVI layers later
-  # 
-  # # rddnsty_prj <- projection(rd_dnsty)
-  # # tst <- projectRaster(rast, res = MODres, crs = rddnsty_prj)
-  # # plot(tst)
-  # #  Have I told you how much I hate NDVI?
-  # 
-  # #  For lots of files
-  # files <- dir(pattern = ".hdf")
-  # filename <- substr(files,11,14)
-  # filename <- paste0("NPP", filename, ".tif")
-  # filename
-  # i <- 1
-  # for (i in 1:15){
-  #   sds <- get_subdatasets(files[i])
-  #   gdal_translate(sds[1], dst_dataset = filename[i])
-  # }
-  # 
+  library(gdalUtils)
+  # setwd("G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1")
+  #  What's inside one of these awful .hdf files?
+  gdalinfo("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
+  #  Save the layer names within a single .hdf file
+  #  Not the pretties way to do this but couldn't get the for loop to work (see below)
+  sds1 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h09v04.006.2018162001604.hdf")
+  sds2 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018145.h10v04.006.2018162000930.hdf")
+  sds3 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018161.h09v04.006.2018177235716.hdf")
+  sds4 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018161.h10v04.006.2018177235445.hdf")
+  sds5 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018177.h09v04.006.2018197102832.hdf")
+  sds6 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018177.h10v04.006.2018197102816.hdf")
+  sds7 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018193.h09v04.006.2018210001831.hdf")
+  sds8 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018193.h10v04.006.2018210001414.hdf")
+  sds9 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018209.h09v04.006.2018227125018.hdf")
+  sds10 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018209.h10v04.006.2018227125257.hdf")
+  sds11 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018225.h09v04.006.2018241235848.hdf")
+  sds12 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018225.h10v04.006.2018241235850.hdf")
+  sds13 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018241.h09v04.006.2018258000752.hdf")
+  sds14 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018241.h10v04.006.2018258000703.hdf")
+  sds15 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018257.h09v04.006.2018282125825.hdf")
+  sds16 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018257.h10v04.006.2018282130308.hdf")
+  sds17 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018273.h09v04.006.2018295105653.hdf")
+  sds18 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018273.h10v04.006.2018295105706.hdf")
+  
+  #  Which layer are you interested in? NDVI is 1st layer
+  sds4
+  
+  #  Generate new names for these files once they're reformatted
+  files <- dir(path = "G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1", pattern = ".hdf")
+  filename <- substr(files,29, 41)
+  filename <- paste0("NDVI_", filename, ".tif")
+  filename
+  
+  #  One at a time
+  gdal_translate(sds1[1], dst_dataset = filename[1])
+  rast1 <- raster(filename[1])
+  gdal_translate(sds1[2], dst_dataset = filename[2])
+  rast2 <- raster(filename[2])
+  gdal_translate(sds1[3], dst_dataset = filename[3])
+  rast3 <- raster(filename[3])
+  gdal_translate(sds1[4], dst_dataset = filename[4])
+  rast4 <- raster(filename[4])
+  gdal_translate(sds1[5], dst_dataset = filename[5])
+  rast5 <- raster(filename[5])
+  gdal_translate(sds1[6], dst_dataset = filename[6])
+  rast6 <- raster(filename[6])
+  gdal_translate(sds1[7], dst_dataset = filename[7])
+  rast7 <- raster(filename[7])
+  gdal_translate(sds1[8], dst_dataset = filename[8])
+  rast8 <- raster(filename[8])
+  gdal_translate(sds1[9], dst_dataset = filename[9])
+  rast9 <- raster(filename[9])
+  gdal_translate(sds1[10], dst_dataset = filename[10])
+  rast10 <- raster(filename[10])
+  gdal_translate(sds1[11], dst_dataset = filename[11])
+  rast11 <- raster(filename[11])
+  gdal_translate(sds1[12], dst_dataset = filename[12])
+  rast12 <- raster(filename[12])
+  #  Stopped working here... WHY?!?!
+  gdal_translate(sds1[13], dst_dataset = filename[13])
+  rast13 <- raster(filename[13])
+  gdal_translate(sds1[14], dst_dataset = filename[14])
+  rast14 <- raster(filename[14])
+  gdal_translate(sds1[15], dst_dataset = filename[15])
+  rast15 <- raster(filename[15])
+  gdal_translate(sds1[16], dst_dataset = filename[16])
+  rast16 <- raster(filename[16])
+  gdal_translate(sds1[17], dst_dataset = filename[17])
+  rast17 <- raster(filename[17])
+  gdal_translate(sds1[18], dst_dataset = filename[18])
+  rast18 <- raster(filename[18])
+  plot(rast12)
+  MODres <- res(rast12)
+  
+  #  Try this for some more trouble shooting since only half the files seemed to work....
+  #  https://gis.stackexchange.com/questions/199647/hdf-files-in-gdal-throwing-an-error-in-r-gdalinfo
+  
+  #  Make a raser stack of all NDVI rasters
+  NDVI_stack <- stack(rast1, rast2, rast3, rast4, rast5, rast6, rast7, rast8, 
+                      rast9, rast10, rast11, rast12)
+  writeRaster(NDVI_stack, filename = "Shapefiles/MODIS_NDVI_MOD13Q1/NDVI_stack", format = "GTiff")
+  #  Read this in with rasterstack()
+  
+  #  Average across all rasters in stack for each pixel to get mean value over time period
+  mean_NDVI <- mean(NDVI_stack)
+  writeRaster(mean_NDVI, filename = "Shapefiles/MODIS_NDVI_MOD13Q1/mean_NDVI_summer18", format = "HFA")
+  
+  #  Reproject used & available locations to match weird NDVI projection
+  NDVIproj <- proj4string(mean_NDVI)
+  projeciton(NDVIproj)
+  
+  cougar_ndvi_proj <- spTransform(cougar_spdf, crs(NDVIproj))
+  available_ndvi_proj <- spTransform(available_spdf, crs(NDVIproj))
+  projection(cougar_ndvi_proj)
+  
+  #  Convert SpatialPointsDataFrames into a regular old dataframe
+  used_locs <- as.data.frame(cougar_ndvi_proj) 
+  class(used_locs)
+  str(used_locs)
+  
+  avail_locs <- as.data.frame(available_ndvi_proj)
+  class(avail_locs)
+  str(avail_locs)
+  
+  #  Extract covaraite data at used & available locations
+  #  ====================================================
+  #  Extract NLCD values at geographic locations
+  used_locs$NDVI <- extract(x = mean_NDVI_stack, y = used_locs[,12:13])
+  avail_locs$NDVI <- extract(x = mean_NDVI, y = avail_locs[,6:7])
+  
+  #  Check output
+  used_locs$NDVI[1:5]
+  head(used_locs)
+  
+  avail_locs$NDVI[1:5]
+  head(avail_locs)
+  
+  #  Save
+  cougar_avail_NDVI <- avail_locs
+  #  Exclude 3rd reprojected coordiantes in used data
+  cougar_used_NDVI <- used_locs[,c(2:11,14)]
+  write.csv(cougar_used_NDVI, "input/cougar_used_NDVI.csv")
+  write.csv(cougar_avail_NDVI, "input/cougar_avail_NDVI.csv")
+  
+  
+  
+  
+  #### Second make a raster stack of all the .tif files
+  #### Just reproject location data to match .tif files
+  #### Extract from there
+  #### Worry about reporjecting NDVI layers later
+  #  Have I told you how much I hate NDVI?
+  
+  
+  gdal_translate(sds[1], dst_dataset = "NDVI.2018162001604.tif")
+  rast <- raster("NDVI.2018162001604.tif")
+  plot(rast)
+  MODres <- res(rast)
+  
+  #  For lots of files
+  files <- dir(path = "G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1", pattern = ".hdf")
+  filename <- substr(files,29, 41)
+  filename <- paste0("NDVI_", filename, ".tif")
+  filename
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  #  Loop over files to create .tif files
+  #  I can't get this to work
+  i <- 1
+  for (i in 1:18){
+    sds <- get_subdatasets(files[i])
+    gdal_translate(sds[1], dst_dataset = filename[i])
+  }
+  
+  #  An alternative way to create new file names
+  #  Create list of MODIS files
+  rlist = list.files(path = "G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1", pattern="hdf$", full.names=FALSE)
+  
+  #  Chop up file names and create new ones
+  #  Function to save only last 9 characters in string (only keep unique numbers at end of file name)
+  substrRight <- function(x, n){
+    substr(x, nchar(x)-n+1, nchar(x))
+  }
+  #  Run function 
+  filenames0 <- substrRight(rlist,9)
+  #  Save first 5 characters in string (chop off ".hdf")
+  filenamessuffix <- substr(filenames0,1,5)
+  #  Create start of new file names
+  listofnewnames <- rep("NDVI_", 18)
+  # Combine pieces to create new names for converted files
+  newnames <- vector()
+  for (i in 1:length(listofnewnames)) {
+    newnames[i] <- paste0(listofnewnames[i], filenamessuffix[i], ".tif")
+  }
+  
+  # Loop over files to convert into rasters
+  #  Still doensn't work
+  ####  Error in split1[[1]] : subscript out of bounds  ####  WHAT THE HECK IS split1[[1]]???
+  for (i in 1:length(rlist)) {
+    sds <- get_subdatasets(rlist[i])
+    gdal_translate(sds[1], dst_dataset = newnames[i])
+  }
+  
