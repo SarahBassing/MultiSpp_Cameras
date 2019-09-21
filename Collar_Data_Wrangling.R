@@ -277,8 +277,10 @@
   #  Remove NE cougars for now
   OKcoug18_used_sf <- coug18_used_sf %>%
     filter(Region == "MV")
+  #write.csv(OKcoug18_used_sf, file = "./Data/OKcoug18_used_sf.csv")
   OKcoug18_avail_sf <- coug18_avail_sf %>%
     filter(Region == "MV")
+  #write.csv(OKcoug18_avail_sf, file = "./Data/OKcoug18_avail_sf.csv")
   
   ggplot() +
     geom_sf(data = OK) +
