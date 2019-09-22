@@ -290,19 +290,3 @@
                                    outDir = "G:/My Drive/1_Repositories/MultiSpp_Cameras/Output")
   # head(DetHist_bobcat)
   
-  
-  
-  #  Occupancy models with unmarked
-  #  ==============================
-  
-  #  Read in detection histories as csv
-  cougar_dh <- read.csv("Output/Cougar__detection_history__no_effort__7_days_per_occasion__occasionStart0h__first_day_2018-06-13__2019-09-20.csv")
-  covs <- read.csv("Input/cam_covs.csv")
-  
-  #  Trim down detection history
-  #  Only need occasions1 - 16 (i.e., weeks of June 13 - Oct 3, 2018)
-  cougar_dh <- cougar_dh[,1:17]
-  
-  #  Merge detection history with covariates dataframe
-  cougdat <- merge(cougar_dh, covs, by.x = "X", by.y = "Cell_ID")
-  
