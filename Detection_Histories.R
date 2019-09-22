@@ -14,7 +14,6 @@
   #  Load packages
   library(camtrapR)
   library(tidyverse)
-  library(unmarked)
   
   #  Read in data
   #  Camera trap stations: deploy and removal dates
@@ -132,20 +131,20 @@
   #  "Error in detectionHistory(recordTable = images_summer18, camOp = cam_probs,: 
   #  Not all values of stationCol in recordTable are matched by rownames of camOp"
   #  list out unique Cell_ID names from each data stream
-  cells1 <- unique(images_summer18$Cell_ID)
-  cells2 <- unique(rownames(probs))
-  #  Count the number of names from each
-  n1 <- 1:length(cells1)
-  n2 <- 1:length(cells2)
-  #  Create dataframes for each data stream
-  img_dat <- as.data.frame(cbind(n1, cells1))
-  colnames(img_dat) <-c("img_station_n", "Cell_ID")
-  cam_dat <- as.data.frame(cbind(n2, cells2, cells2))
-  colnames(cam_dat) <- c("station_n", "Cell_ID", "Station_cells")
-  #  Join dataframes by Cell_ID- should line up perfectly
-  #  NA's in "Cell_ID" or "Station_cells" indicate mismatch
-  matching <- cam_dat %>%
-    full_join(img_dat, by = "Cell_ID")
+  # cells1 <- unique(images_summer18$Cell_ID)
+  # cells2 <- unique(rownames(probs))
+  # #  Count the number of names from each
+  # n1 <- 1:length(cells1)
+  # n2 <- 1:length(cells2)
+  # #  Create dataframes for each data stream
+  # img_dat <- as.data.frame(cbind(n1, cells1))
+  # colnames(img_dat) <-c("img_station_n", "Cell_ID")
+  # cam_dat <- as.data.frame(cbind(n2, cells2, cells2))
+  # colnames(cam_dat) <- c("station_n", "Cell_ID", "Station_cells")
+  # #  Join dataframes by Cell_ID- should line up perfectly
+  # #  NA's in "Cell_ID" or "Station_cells" indicate mismatch
+  # matching <- cam_dat %>%
+  #   full_join(img_dat, by = "Cell_ID")
   
   
   #  Create detection history for a single species
@@ -177,7 +176,7 @@
                                    speciesCol = "Species",
                                    recordDateTimeCol = "DateTimeOriginal",
                                    species = "Mule Deer",
-                                   occasionLength = 7, # number of days
+                                   occasionLength = 7,  # number of days
                                    day1 = "2018-06-13", # start detecion history when 1st camera deployed
                                    includeEffort = F,   # fills in NA when station was malfunctioning
                                    timeZone = "US/Pacific",
