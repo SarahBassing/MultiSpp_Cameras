@@ -213,17 +213,17 @@
     cbind(stations_waterdnsty_df$water_dnsty_km) %>%
     cbind(stations_df$hydro_OK_dist) %>%
     cbind(stations_df$hydro_Ch_dist) %>%
-    full_join(srvy_covs[,3:28], by = c("Cell_ID", "Camera_ID"))
+    full_join(srvy_covs[,3:29], by = c("Cell_ID", "Camera_ID"))
   colnames(cam_covs) <- c("Cell_ID", "Camera_ID", "NLCD", "Elev", "Ruggedness",
                           "Rd_Density", "Nearest_Rd", 
                           "Water_Density", "Nearest_H20_OK", "Nearest_H20_Ch",
                           "Study_Area", "Camera_Lat", "Camera_Long", 
                           "Dist_focal_pt", "Monitoring", "Canopy_Cover", 
-                          "Land_mgnt", "Habitat_type", "Height_o1", "Height_o2", 
-                          "Heigh_o3", "Height_o4", "Height_o5", "Height_o6", 
-                          "Height_o7", "Height_o8", "Height_o9", "Height_o10", 
-                          "Height_o11", "Height_o12", "Height_o13", "Height_o14", 
-                          "Height_o15", "Height_o16") 
+                          "Land_mgnt", "Habitat_type", "Habitat_type_reduced", 
+                          "Height_o1", "Height_o2", "Heigh_o3", "Height_o4",
+                           "Height_o5", "Height_o6", "Height_o7", "Height_o8", 
+                          "Height_o9", "Height_o10", "Height_o11", "Height_o12", 
+                          "Height_o13", "Height_o14", "Height_o15", "Height_o16")
   
   head(cam_covs)
   
