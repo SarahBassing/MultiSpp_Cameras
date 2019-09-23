@@ -105,15 +105,15 @@
   #  2.5.  Water Density
   #  ============================
   #  Resolution 997.4 m x 999 m
-  #  Density of roads is in meters of road per 1000 x 1000 m cell
+  #  Density of water is in meters of stream per 1000 x 1000 m cell
   #  Need to divide by 1000 to put in km2
   
   #  Make camera staions spdf non-spatial
   stations_waterdnsty_df <- as.data.frame(stations_spdf)
   
-  #  Extract land cover type at location of each camera station
+  #  Extract water densigy at location of each camera station
   stations_waterdnsty_df$water_dnsty_m <- raster::extract(x = water_dnsty, y = stations_waterdnsty_df[,3:4])
-  #  Convert measuremetn units to square kilometers
+  #  Convert measurement units to square kilometers
   stations_waterdnsty_df$water_dnsty_km <- stations_waterdnsty_df$water_dnsty_m/1000
   head(stations_waterdnsty_df)
   
