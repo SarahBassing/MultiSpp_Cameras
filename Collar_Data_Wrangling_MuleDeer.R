@@ -184,6 +184,7 @@
   colnames(ind_avail_pts) <- c("Collar_ID", "Longitude", "Latitude")
   
   #  Save for extracting with other scripts (csv, sf, spdf)
+  head(ind_avail_pts)
   mulies18_avail_sf <- st_as_sf(ind_avail_pts, coords = 2:3, crs = "+init=epsg:2855")
   require(rgdal)
   proj <- CRS("+init=epsg:2855")
@@ -191,6 +192,7 @@
                                               proj4string = proj,
                                               data = as.data.frame(ind_avail_pts[,c("Collar_ID")]))
   mulies18_avail_df <- as.data.frame(mulies18_avail_spdf)
+  colnames(mulies18_avail_df) <- c("Collar_ID", "Longitude", "Latitude")
   # write.csv(mulies18_avail_df, file = "./Input/mulies18_avail_df.csv")
   # writeOGR(mulies18_avail_spdf, dsn = "./Input", layer = "mulies18_avail_spdf", driver = "ESRI Shapefile", overwrite = TRUE)
   
@@ -212,7 +214,7 @@
     st_transform("+init=epsg:2855")
   
   #  Double check that it reprojected correctly
-  st_crs(NE)
+  st_crs(OK)
   
   #  Visualize
   ggplot() +
@@ -222,38 +224,42 @@
   
   #  1. Distance to nearest road (continuous)
   #  ========================================
-  #  Read in shapefile (these are big so they take awhile)
-  #  Currently reading in shapefile that was cropped to 2018 cougar locations bbox
-  # roads_SA <- st_read("Shapefiles/Roads/roads_SA.shp", crs = "+init=epsg:2855")
-  roads_OK <- st_read("Shapefiles/Roads/roads_OK.shp", crs = "+init=epsg:2855") 
- 
-  #  Visualize
-  # ggplot() +
-  #   geom_sf(data = roads_OK) +
-  #   geom_sf(data = mulies18_used_sf, aes(color = Collar_ID))
+  #  B.Gardner calculated distance to nearest road based on code below
+  # mulies18_used_rd_dist <- 
+  # mulies18_avail_rd_dist <- 
   
-  #  For all cougar locations (used & available)
-  #  Measure distance btwn each point and every road in study area
-  #  THIS TAKES FOREVER
-  road_dist_used_mulies <- st_distance(y = mulies18_used_sf, x = roads_OK)
-  road_dist_avail_mulies <- st_distance(y = mulies18_avail_sf, x = roads_OK)
-  
-  #save(road_dist_avail_mulies, file = "./input/road_dist_avail_mulies.RData")
-  
-  #  Find closest road (minimum distance) to each point & added to dataframe
-  mulies18_used_sf$road_dist <- apply(road_dist_used_mulies, 2, min)
-  mulies18_avail_sf$road_dist <- apply(road_dist_avail_mulies, 2, min)
-  #  ERROR: Error: cannot allocate vector of size 19.0 Gb
-  #  it's too big!!! What do I do?!?!?!?!
-  
-  
-  ####  HOW DO I ADD THE NE STUFF W/O MAKING NEW COLUMN OR OVERWRITING CURRENT COLUMN?
-
-  
-  mulies18_used_rd_dist <- as.data.frame(mulies18_used_sf)
-  write.csv(mulies18_used_rd_dist, "./Input/mulies18_used_rd_dist.csv")
-  mulies18_avail_rd_dist <- as.data.frame(mulies18_avail_sf)
-  write.csv(mulies18_avail_rd_dist, "./Input/mulies18_avail_rd_dist.csv")
+  # #  Read in shapefile (these are big so they take awhile)
+  # #  Currently reading in shapefile that was cropped to 2018 cougar locations bbox
+  # # roads_SA <- st_read("Shapefiles/Roads/roads_SA.shp", crs = "+init=epsg:2855")
+  # roads_OK <- st_read("Shapefiles/Roads/roads_OK.shp", crs = "+init=epsg:2855") 
+  # 
+  # #  Visualize
+  # # ggplot() +
+  # #   geom_sf(data = roads_OK) +
+  # #   geom_sf(data = mulies18_used_sf, aes(color = Collar_ID))
+  # 
+  # #  For all cougar locations (used & available)
+  # #  Measure distance btwn each point and every road in study area
+  # #  THIS TAKES FOREVER
+  # road_dist_used_mulies <- st_distance(y = mulies18_used_sf, x = roads_OK)
+  # road_dist_avail_mulies <- st_distance(y = mulies18_avail_sf, x = roads_OK)
+  # 
+  # #save(road_dist_avail_mulies, file = "./input/road_dist_avail_mulies.RData")
+  # 
+  # #  Find closest road (minimum distance) to each point & added to dataframe
+  # mulies18_used_sf$road_dist <- apply(road_dist_used_mulies, 2, min)
+  # mulies18_avail_sf$road_dist <- apply(road_dist_avail_mulies, 2, min)
+  # #  ERROR: Error: cannot allocate vector of size 19.0 Gb
+  # #  it's too big!!! What do I do?!?!?!?!
+  # 
+  # 
+  # ####  HOW DO I ADD THE NE STUFF W/O MAKING NEW COLUMN OR OVERWRITING CURRENT COLUMN?
+  # 
+  # 
+  # mulies18_used_rd_dist <- as.data.frame(mulies18_used_sf)
+  # write.csv(mulies18_used_rd_dist, "./Input/mulies18_used_rd_dist.csv")
+  # mulies18_avail_rd_dist <- as.data.frame(mulies18_avail_sf)
+  # write.csv(mulies18_avail_rd_dist, "./Input/mulies18_avail_rd_dist.csv")
   
   
   #  1.5  Road density (continuous)
@@ -263,41 +269,43 @@
   #  Data extracted with Raster_Covariate_Extractions.R script
   mulies_used_rddnsty <- read.csv("./Input/mulies_used_rddnsty.csv")
   mulies_avail_rddnsty <- read.csv("./Input/mulies_avail_rddnsty.csv")
-  #  Convert measuremetn units to square kilometers
-  mulies_used_rddnsty$rd_dnsty_km <- mulies_used_rddnsty$rd_dnsty/1000
-  mulies_avail_rddnsty$rd_dnsty_km <- mulies_avail_rddnsty$rd_dnsty/1000
-  head(mulies_used_rddnsty)
+  # #  Convert measuremetn units to square kilometers
+  # mulies_used_rddnsty$rd_dnsty_km <- mulies_used_rddnsty$rd_dnsty/1000
+  # mulies_avail_rddnsty$rd_dnsty_km <- mulies_avail_rddnsty$rd_dnsty/1000
+  # head(mulies_used_rddnsty)
   
   
   #  2. Distance to water (continuous)
   #  ================================
-  hydro_OK <- st_read("Shapefiles/Hydro/hydro_OK.shp", crs = "+init=epsg:2855") 
-  hydro_Ch <- st_read("Shapefiles/Hydro/hydro_Ch.shp", crs = "+init=epsg:2855") 
-  hydro_St <- st_read("Shapefiles/Hydro/hydro_St.shp", crs = "+init=epsg:2855")
-  hydro_PO <- st_read("Shapefiles/Hydro/hydro_PO.shp", crs = "+init=epsg:2855")
-  hydro_Sp <- st_read("Shapefiles/Hydro/hydro_Sp.shp", crs = "+init=epsg:2855")
-  
-  #  Visualize
-  # ggplot() +
-  #   geom_sf(data = hydro_OK) +
-  #   geom_sf(data = hydro_Ch) +
-  #   geom_sf(data = mulie18_used_sf, aes(color = Collar_ID))
-  
-  #  Measure distance btwn each point and every stream in study area...
-  #  this takes AWHILE
-  hydro_OK_dist_mulies <- st_distance(y = mulies18_used_sf, x = hydro_OK)
-  hydro_Ch_dist_mulies <- st_distance(y = mulies18_used_sf, x = hydro_Ch)
-  hydro_OK_dist_rnd <- st_distance(y = mulies18_avail_sf, x = hydro_OK) 
-  hydro_Ch_dist_rnd <- st_distance(y = mulies18_avail_sf, x = hydro_Ch) 
-  
-  #  Find closest stream (minimum distance) to each point & added to dataframe
-  mulies18_used_sf$hydro_OK_dist <- apply(hydro_OK_dist_mulies, 2, min)
-  mulies18_used_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_mulies, 2, min)  
-  mulies18_avail_sf$hydro_OK_dist <- apply(hydro_OK_dist_rnd, 2, min)
-  mulies18_avail_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_rnd, 2, min)
+  # hydro_OK <- st_read("Shapefiles/Hydro/hydro_OK.shp", crs = "+init=epsg:2855") 
+  # hydro_Ch <- st_read("Shapefiles/Hydro/hydro_Ch.shp", crs = "+init=epsg:2855") 
+  # hydro_St <- st_read("Shapefiles/Hydro/hydro_St.shp", crs = "+init=epsg:2855")
+  # hydro_PO <- st_read("Shapefiles/Hydro/hydro_PO.shp", crs = "+init=epsg:2855")
+  # hydro_Sp <- st_read("Shapefiles/Hydro/hydro_Sp.shp", crs = "+init=epsg:2855")
+  # 
+  # #  Visualize
+  # # ggplot() +
+  # #   geom_sf(data = hydro_OK) +
+  # #   geom_sf(data = hydro_Ch) +
+  # #   geom_sf(data = mulie18_used_sf, aes(color = Collar_ID))
+  # 
+  # #  Measure distance btwn each point and every stream in study area...
+  # #  this takes AWHILE
+  # hydro_OK_dist_mulies <- st_distance(y = mulies18_used_sf, x = hydro_OK)
+  # hydro_Ch_dist_mulies <- st_distance(y = mulies18_used_sf, x = hydro_Ch)
+  # hydro_OK_dist_rnd <- st_distance(y = mulies18_avail_sf, x = hydro_OK) 
+  # hydro_Ch_dist_rnd <- st_distance(y = mulies18_avail_sf, x = hydro_Ch) 
+  # 
+  # #  Find closest stream (minimum distance) to each point & added to dataframe
+  # mulies18_used_sf$hydro_OK_dist <- apply(hydro_OK_dist_mulies, 2, min)
+  # mulies18_used_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_mulies, 2, min)  
+  # mulies18_avail_sf$hydro_OK_dist <- apply(hydro_OK_dist_rnd, 2, min)
+  # mulies18_avail_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_rnd, 2, min)
   
   #  2.5. Water density
   #  =================================
+  mulies_used_water_dnsty <- read.csv("input/mulies_used_h20dnsty.csv")
+  mulies_avail_water_dnsty <- read.csv("input/mulies_avail_h20dnsty.csv")
   
   
   
@@ -349,7 +357,7 @@
   mulies_avail_dem <- read.csv("input/mulies_avail_dem.csv")
   
   mulies_used_tri <- read.csv("input/mulies_used_TRI.csv")
-  mulies_avail_tri <- read.csv("input/mulies_used_TRI.csv")
+  mulies_avail_tri <- read.csv("input/mulies_avail_TRI.csv")
   
   
   
@@ -365,74 +373,47 @@
   
   #  Combine covariate data into a single df
   #  Used 
-  mulies_used_covs <- mulies_summer18[,c(2:10)] %>%
+  mulies18_used_covs <- mulies_summer18[,c(2:9)] %>%
     cbind(mulies_used_landcov$NLCD) %>%
     cbind(mulies_used_dem$elev) %>%
     cbind(mulies_used_tri$TRI) %>%
-    cbind(mulies_used_rddnsty$rd_dnsty_km) #%>%
-  cbind(mulies_used_sf$road_dist) %>%
-    cbind(mulies18_used_sf$hydro_OK_dist) %>%
-    cbind(mulies18_used_sf$hydro_Ch_dist)
-  colnames(mulies18_used_covs) <- c("Region", "Animal_ID", "Collar_ID", "TimeStamp", 
-                                  "DateTime", "location_long", "location_lat", 
+    cbind(mulies_used_rddnsty$rd_dnsty_km) %>%
+    cbind(mulies_used_water_dnsty$water_dnsty_km) #%>%
+    # cbind(mulies_used_sf$road_dist) %>%
+    # cbind(mulies18_used_sf$hydro_OK_dist) %>%
+    # cbind(mulies18_used_sf$hydro_Ch_dist)
+  colnames(mulies18_used_covs) <- c("Collar_ID", "location_long", "location_lat",  
+                                  "ObsDTPST", "DateTime", "Julian", 
                                   "Longitude", "Latitude", "NLCD", "Elev", "TRI", 
-                                  "Rd_Density_km", "Nearest_Rd", "Nearest_H20_OK", 
-                                  "Nearest_H20_Ch") 
+                                  "Rd_Density_km", "H20_Density_km")  
+                                  # "Nearest_Rd", "Nearest_H20_OK","Nearest_H20_Ch"
   
   head(mulies18_used_covs)
   
   #  Available
-  coug_18_avail_covs <- coug18_avail_df %>%
-    cbind(cougar_avail_landcov$NLCD) %>%
-    cbind(cougar_avail_dem$elev) %>%
-    cbind(cougar_avail_tri$TRI) %>%
-    cbind(cougar_avail_rddnsty$rd_dnsty_km) 
-  cbind(coug18_avail_sf$road_dist) %>%
-    cbind(coug18_avail_sf$hydro_OK_dist) %>%
-    cbind(coug18_avail_sf$hydro_Ch_dist)
-  colnames(coug_18_avail_covs) <- c("Animal_ID", "Region","Longitude", "Latitude", 
+  mulies18_avail_covs <- mulies18_avail_df %>%
+    cbind(mulies_avail_landcov$NLCD) %>%
+    cbind(mulies_avail_dem$elev) %>%
+    cbind(mulies_avail_tri$TRI) %>%
+    cbind(mulies_avail_rddnsty$rd_dnsty_km) %>%
+    cbind(mulies_avail_water_dnsty$water_dnsty_km) #%>%
+    # cbind(mulies18_avail_sf$road_dist) %>%
+    # cbind(mulies18_avail_sf$hydro_OK_dist) %>%
+    # cbind(mulies18_avail_sf$hydro_Ch_dist)
+  colnames(mulies18_avail_covs) <- c("Collar_ID", "Longitude", "Latitude", 
                                     "NLCD", "Elev", "TRI", "Rd_Density_km", 
-                                    "Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch") 
+                                    "H20_Density_km")
+                                    #"Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch" 
   
-  head(coug_18_avail_covs)
-  
-  
-  write.csv(coug18_used_covs, "Input/coug18_used_covs.csv")
-  write.csv(coug_18_avail_covs, "Input/coug_18_avail_covs.csv")
+  head(mulies18_avail_covs)
   
   
-  #  Combine covariate data for available locations
+  write.csv(mulies18_used_covs, "Input/mulies18_used_covs.csv")
+  write.csv(mulies18_avail_covs, "Input/mulies18_avail_covs.csv")
   
-  # #  Generate used-available response variable
-  # #  "used" = 1, "available" = 0
-  # used <- rep(1, n_studyarea_pts[1,2])
-  # avail <- rep(0, n_rnd_pts[1,2])
-  # 
-  # 
-  # #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
-  # #  Matrix for regression
-  # dat <- as.data.frame(rep("MVC202F", n_cougar_pts[n_cougar_pts$Animal_ID == "MVC202F", 2]))
-  # dat$used <- used
-  # dat$road_dist <- cougar1_sf$road_dist
-  # colnames(dat) <- c("Animal_ID", "used", "road_dist")
-  # 
-  # #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
-  # available <- as.data.frame(rep("MVC202F", 10000))
-  # available$used <- avail
-  # available$road_dist <- rndpts_sf$FAKE_road_dist
-  # colnames(available) <- c("Animal_ID", "used", "road_dist")
-  # 
-  # dat <- rbind(dat, available)
-  # 
-  # #  Standardize covariates
-  # standard_dat <- scale(dat$road_dist, center = TRUE, scale = TRUE)
-  # 
-  # dat$road_dist_z <- standard_dat
   
-  #write.csv(dat, file = "./input/dat.csv")
-  #save(dat, file = "input/dat.RData")
-  #  My .RData files aren't working- might have to do with administrative 
-  #  privilage to update R on this computer... need to talk to IT
+
+  
   
   
   
