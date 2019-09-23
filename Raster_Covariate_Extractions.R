@@ -167,9 +167,6 @@
   write.csv(cougar_used_TRI, "input/cougar_used_TRI.csv")
   write.csv(cougar_avail_TRI, "input/cougar_avail_TRI.csv")
   
-  # require(spatialEco)
-  # tri <- spatialEco::tri(DEM)
-  
   
   
   #  Road Density
@@ -180,42 +177,79 @@
   res(rd_dnsty)
   projection(rd_dnsty)  # already matches cougar data
   
-  #  Make camera staions spdf non-spatial
-  cougar_rddnsty_spdf <- as.data.frame(cougar_spdf)
-  available_rddnsty_spdf <- as.data.frame(available_spdf)
+  #  Make locations spdf non-spatial
+  cougar_rddnsty_df <- as.data.frame(cougar_spdf)
+  available_rddnsty_df <- as.data.frame(available_spdf)
   
-  # plot(cougar_rddnsty_spdf)
-  # plot(DEM, add = TRUE)
-  # plot(cougar_rddnsty_spdf, add = TRUE, pch = 19, col = "red")
+  # plot(cougar_spdf)
+  # plot(rd_dnsty, add = TRUE)
+  # plot(cougar_spdf, add = TRUE, pch = 19, col = "red")
   
-  #  Convert spdf into a df with DEM projection
-  used_locs <- as.data.frame(cougar_rddnsty_spdf) 
-  class(used_locs)
-  str(used_locs)
-  
-  avail_locs <- as.data.frame(available_rddnsty_spdf)
-  class(avail_locs)
-  str(avail_locs)
-  
-  #  Extract elevation at geographic locations
-  used_locs$rd_dnsty <- extract(x = rd_dnsty, y = used_locs[,10:11])
-  avail_locs$rd_dnsty <- extract(x = rd_dnsty, y = avail_locs[,4:5])
-  
-  ####  DON'T FORGET TO CHANGE UNITS TO SQ KM!!!!  Divide by 1000  ####
+  #  Extract road density of pixel where location falls
+  cougar_rddnsty_df$rd_dnsty_m <- extract(x = rd_dnsty, y = cougar_rddnsty_df[,10:11])
+  available_rddnsty_df$rd_dnsty_m <- extract(x = rd_dnsty, y = available_rddnsty_df[,4:5])
+  #  Convert measurement units to square kilometers
+  cougar_rddnsty_df$rd_dnsty_km <- cougar_rddnsty_df$rd_dnsty_m/1000
+  head(cougar_rddnsty_df)
+  available_rddnsty_df$rd_dnsty_km <- available_rddnsty_df$rd_dnsty_m/1000
+  head(available_rddnsty_df)
   
   #  Check output
-  used_locs$rd_dnsty[1:5]
-  head(used_locs)
+  cougar_rddnsty_df$rd_dnsty_km[1:5]
   #  Exclude 3rd reprojected coordiantes in used data
-  cougar_used_rddnsty <- used_locs[,c(2:11,14)]
+  cougar_used_rddnsty <- cougar_rddnsty_df[,c(2:11,15)]
+  head(cougar_used_rddnsty)
   
-  avail_locs$rd_dnsty[1:5]
-  head(avail_locs)
-  cougar_avail_rddnsty <- avail_locs[,c(2:8)]
+  available_rddnsty_df$rd_dnsty_km[1:5]
+  cougar_avail_rddnsty <- available_rddnsty_df[,c(2:5,9)]
+  head(cougar_avail_rddnsty)
   
   #  Save
   write.csv(cougar_used_rddnsty, "input/cougar_used_rddnsty.csv")
   write.csv(cougar_avail_rddnsty, "input/cougar_avail_rddnsty.csv")
+  
+  
+  #  Denisty of streams (OK only)
+  #  ============================
+  #  Density of roads is in meters of road per 1000 x 1000 m cell
+  #  Resolution 997.4 m x 999 m
+  #  Need to divide by 1000 to put in km2
+  #  Read in water density raster & check projection
+  water_dnsty <- raster("Shapefiles/Hydro/merged_waterdensity_OK.img")
+  res(water_dnsty)
+  projection(water_dnsty) # same as cougar locations
+  
+  #  Make used and available cougar location spdfs non-spatial
+  cougar_waterdnsty_df <- as.data.frame(cougar_spdf)
+  available_waterdnsty_df <- as.data.frame(available_spdf)
+  
+  # plot(cougar_spdf)
+  # plot(water_dnsty, add = TRUE)
+  # plot(cougar_spdf, add = TRUE, pch = 19, col = "blue")
+  
+  #  Extract water density at location of each point
+  cougar_waterdnsty_df$water_dnsty_m <- raster::extract(x = water_dnsty, y = cougar_waterdnsty_df[,10:11])
+  available_waterdnsty_df$water_dnsty_m <- raster::extract(x = water_dnsty, y = available_waterdnsty_df[,4:5])
+  #  Convert measurement units to square kilometers
+  cougar_waterdnsty_df$water_dnsty_km <- cougar_waterdnsty_df$water_dnsty_m/1000
+  head(cougar_waterdnsty_df)
+  available_waterdnsty_df$water_dnsty_km <- available_waterdnsty_df$water_dnsty_m/1000
+  head(available_waterdnsty_df)
+  
+  #  Check output
+  cougar_waterdnsty_df$water_dnsty_km[1:5]
+  #  Exclude 3rd reprojected coordiantes in used data
+  cougar_used_h20dnsty <- cougar_waterdnsty_df[,c(2:11,15)]
+  head(cougar_used_h20dnsty)
+  
+  available_waterdnsty_df$water_dnsty_km[1:5]
+  cougar_avail_h20dnsty <- available_waterdnsty_df[,c(2:5,9)]
+  head(cougar_avail_h20dnsty)  
+  
+  #  Save
+  write.csv(cougar_used_h20dnsty, "input/cougar_used_h20dnsty.csv")
+  write.csv(cougar_avail_h20dnsty, "input/cougar_avail_h20dnsty.csv")
+  
   
   
   
