@@ -88,6 +88,9 @@
   # write.csv(cougars_summer18, file = "./input/cougars_summer18.csv")
   # writeOGR(coug18_used_spdf, dsn = "./input", layer = "coug18_used_spdf", driver = "ESRI Shapefile")
   
+  #  Read in cougar data -- ONLY DO if short cutting everything above
+  # cougars_summer18 <- read.csv("./input/cougars_summer18.csv")
+  
   #  Count number of points per study area with final number of cougars
   n_studyarea_pts <- cougars_summer18 %>%
     group_by(Region) %>%
@@ -210,6 +213,11 @@
   coug18_avail_df <- as.data.frame(coug18_avail_spdf)
   # write.csv(coug18_avail_df, file = "./Input/coug18_avail_df.csv")
   # writeOGR(coug18_avail_spdf, dsn = "./Input", layer = "coug18_avail_spdf", driver = "ESRI Shapefile")
+  
+  #  Read in random available cougar points-- ONLY DO if short cutting everything above
+  # coug18_avail_df <- read.csv("./Input/coug18_avail_df.csv")
+  # coug18_avail_sf <- st_as_sf(coug18_avail_df, coords = 4:5, crs = "+init=epsg:2855")
+  
   
   #  Count total number of available points in each study area
   n_rnd_pts <- coug18_avail_df %>%
@@ -387,8 +395,8 @@
   #  =================================
   #  Water density = total length of streams (in km) per 1 sq. km
   #  Resolution: 997.4 m x 999 m
-  used_water_dnsty <- read.csv(".input/cougar_used_h20dnsty.csv")
-  avail_water_dnsty <- read.csv("input/cougar_avail_h20dnsty.csv")
+  cougar_used_water_dnsty <- read.csv("input/cougar_used_h20dnsty.csv")
+  cougar_avail_water_dnsty <- read.csv("input/cougar_avail_h20dnsty.csv")
   
   
   #  3. Land cover type (categrorical)
@@ -431,7 +439,7 @@
     dplyr::select(-NLCD)
   
   
-  #  4. Elevation (& elevation^2?) & Ruggedness (continuous)
+  #  4. Elevation & Ruggedness (continuous)
   #  =======================================================
   #  Currently based on 30x30 m cell where point fell
   #  Data extracted with Raster_Covariate_Extractions.R script
@@ -439,7 +447,7 @@
   cougar_avail_dem <- read.csv("input/cougar_avail_dem.csv")
   
   cougar_used_tri <- read.csv("input/cougar_used_TRI.csv")
-  cougar_avail_tri <- read.csv("input/cougar_used_TRI.csv")
+  cougar_avail_tri <- read.csv("input/cougar_avail_TRI.csv")
 
   
   
@@ -456,35 +464,41 @@
   #  Combine covariate data into a single df
   #  Used 
   coug18_used_covs <- cougars_summer18[,c(2:10)] %>%
+    mutate(
+      Used <- rep(1, nrow(.))
+    ) %>%
     cbind(cougar_used_landcov$NLCD) %>%
     cbind(cougar_used_dem$elev) %>%
     cbind(cougar_used_tri$TRI) %>%
     cbind(cougar_used_rddnsty$rd_dnsty_km) %>%
-    cbind(cougar_used_h20dnsty$water_dnsty_km) %>%
-    #cbind(coug18_used_sf$road_dist) %>%
-    #cbind(coug18_used_sf$hydro_OK_dist) %>%
-    #cbind(coug18_used_sf$hydro_Ch_dist)
+    cbind(cougar_used_water_dnsty$water_dnsty_km) #%>%
+    # cbind(coug18_used_sf$road_dist) %>%
+    # cbind(coug18_used_sf$hydro_OK_dist) %>%
+    # cbind(coug18_used_sf$hydro_Ch_dist)
   colnames(coug18_used_covs) <- c("Region", "Animal_ID", "Collar_ID", "TimeStamp", 
                           "DateTime", "location_long", "location_lat", 
-                          "Longitude", "Latitude", "NLCD", "Elev", "TRI", 
+                          "Longitude", "Latitude", "Used", "NLCD", "Elev", "TRI", 
                           "Rd_Density_km", "Water_Density_km") 
                           # "Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch"
-  
   head(coug18_used_covs)
   
   #  Available
   coug_18_avail_covs <- coug18_avail_df %>%
+    mutate(
+      Used <- rep(0, nrow(.))
+    ) %>%
     cbind(cougar_avail_landcov$NLCD) %>%
     cbind(cougar_avail_dem$elev) %>%
     cbind(cougar_avail_tri$TRI) %>%
-    cbind(cougar_avail_rddnsty$rd_dnsty_km) 
-    cbind(coug18_avail_sf$road_dist) %>%
-    cbind(coug18_avail_sf$hydro_OK_dist) %>%
-    cbind(coug18_avail_sf$hydro_Ch_dist)
-  colnames(coug_18_avail_covs) <- c("Animal_ID", "Region","Longitude", "Latitude", 
-                                    "NLCD", "Elev", "TRI", "Rd_Density_km", 
-                                    "Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch") 
-  
+    cbind(cougar_avail_rddnsty$rd_dnsty_km) %>%
+    cbind(cougar_avail_water_dnsty$water_dnsty_km) #%>%
+    # cbind(coug18_avail_sf$road_dist) %>%
+    # cbind(coug18_avail_sf$hydro_OK_dist) %>%
+    # cbind(coug18_avail_sf$hydro_Ch_dist)
+  colnames(coug_18_avail_covs) <- c("X", "Animal_ID", "Region","Longitude",  
+                                    "Latitude", "Used", "NLCD", "Elev", "TRI", 
+                                    "Rd_Density_km", "Water_Density_km")
+                                    #"Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch" 
   head(coug_18_avail_covs)
   
   
@@ -492,40 +506,9 @@
   write.csv(coug_18_avail_covs, "Input/coug_18_avail_covs.csv")
   
   
-  #  Combine covariate data for available locations
   
-  # #  Generate used-available response variable
-  # #  "used" = 1, "available" = 0
-  # used <- rep(1, n_studyarea_pts[1,2])
-  # avail <- rep(0, n_rnd_pts[1,2])
-  # 
-  # 
-  # #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
-  # #  Matrix for regression
-  # dat <- as.data.frame(rep("MVC202F", n_cougar_pts[n_cougar_pts$Animal_ID == "MVC202F", 2]))
-  # dat$used <- used
-  # dat$road_dist <- cougar1_sf$road_dist
-  # colnames(dat) <- c("Animal_ID", "used", "road_dist")
-  # 
-  # #  NEED TO UPDATE THIS FOR MULTIPLE ANIMALS
-  # available <- as.data.frame(rep("MVC202F", 10000))
-  # available$used <- avail
-  # available$road_dist <- rndpts_sf$FAKE_road_dist
-  # colnames(available) <- c("Animal_ID", "used", "road_dist")
-  # 
-  # dat <- rbind(dat, available)
-  # 
-  # #  Standardize covariates
-  # standard_dat <- scale(dat$road_dist, center = TRUE, scale = TRUE)
-  # 
-  # dat$road_dist_z <- standard_dat
   
-  #write.csv(dat, file = "./input/dat.csv")
-  #save(dat, file = "input/dat.RData")
-  #  My .RData files aren't working- might have to do with administrative 
-  #  privilage to update R on this computer... need to talk to IT
   
-
   
   
   
