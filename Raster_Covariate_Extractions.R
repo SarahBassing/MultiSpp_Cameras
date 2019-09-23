@@ -19,13 +19,24 @@
   library(ggplot2)
   
   
-  #  Read in location data
-  #  Used cougar locations
+  #  Read in location data for each species
+  #  ======================================
+  #  Cougars
+  #  Used locations
   cougar <- read.csv("./Input/cougars_summer18.csv")
   cougar_spdf <- SpatialPointsDataFrame(cougar[,10:11], cougar, proj4string = CRS("+init=epsg:2855"))
   #  Randomly selected "available points"
   available <- read.csv("./Input/coug18_avail_df.csv")
   available_spdf <- SpatialPointsDataFrame(available[,4:5], available, proj4string = CRS("+init=epsg:2855"))
+  
+  #  Mule deer
+  #  Used locations
+  mulies <- read.csv("./Input/mulies_summer18.csv")
+  mulies_spdf <- SpatialPointsDataFrame(mulies[,9:10], mulies, proj4string = CRS("+init=epsg:2855"))
+  #  Randomly selected "available points"
+  available_mulies <- read.csv("./Input/mulies18_avail_df.csv")
+  available_mulies_spdf <- SpatialPointsDataFrame(available_mulies[,3:4], 
+                                                  available_mulies, proj4string = CRS("+init=epsg:2855"))
   
   
   #  National Land Cover Database 
@@ -43,6 +54,9 @@
   cougar_nlcd_proj <- spTransform(cougar_spdf, crs(landproj))
   available_nlcd_proj <- spTransform(available_spdf, crs(landproj))
   
+  mulies_nlcd_proj <- spTransform(mulies_spdf, crs(landproj))
+  mulies_avail_nlcd_proj <- spTransform(available_mulies_spdf, crs(landproj))
+  
   #  Double check projections match
   projection(landcov)
   projection(cougar_nlcd_proj)
@@ -51,36 +65,66 @@
   # plot(cougar_nlcd_proj)
   # plot(landcov, add = TRUE)
   # plot(cougar_nlcd_proj, add = TRUE, pch = 19, col = "red")
-
-  #  Convert SpatialPointsDataFrames into a regular old dataframe
-  used_locs <- as.data.frame(cougar_nlcd_proj) 
-  class(used_locs)
-  str(used_locs)
-  
-  avail_locs <- as.data.frame(available_nlcd_proj)
-  class(avail_locs)
-  str(avail_locs)
   
   
   #  Extract covaraite data at used & available locations
   #  ====================================================
+  #  Cougars
+  #  Convert SpatialPointsDataFrames into a regular old dataframe
+  used_locs_cg <- as.data.frame(cougar_nlcd_proj) 
+  class(used_locs_cg)
+  str(used_locs_cg)
+  
+  avail_locs_cg <- as.data.frame(available_nlcd_proj)
+  class(avail_locs_cg)
+  str(avail_locs_cg)
+  
   #  Extract NLCD values at geographic locations
-  used_locs$NLCD <- extract(x = landcov, y = used_locs[,12:13])
-  avail_locs$NLCD <- extract(x = landcov, y = avail_locs[,6:7])
+  used_locs_cg$NLCD <- extract(x = landcov, y = used_locs_cg[,12:13])
+  avail_locs_cg$NLCD <- extract(x = landcov, y = avail_locs_cg[,6:7])
   
   #  Check output
-  used_locs$NLCD[1:5]
-  head(used_locs)
+  used_locs_cg$NLCD[1:5]
+  head(used_locs_cg)
   
-  avail_locs$NLCD[1:5]
-  head(avail_locs)
+  avail_locs_cg$NLCD[1:5]
+  head(avail_locs_cg)
   
   #  Save
-  cougar_avail_landcov <- avail_locs
+  cougar_avail_landcov <- avail_locs_cg
   #  Exclude 3rd reprojected coordiantes in used data
-  cougar_used_landcov <- used_locs[,c(2:11,14)]
+  cougar_used_landcov <- used_locs_cg[,c(2:11,14)]
   write.csv(cougar_used_landcov, "input/cougar_used_landcov.csv")
   write.csv(cougar_avail_landcov, "input/cougar_avail_landcov.csv")
+  
+  
+  #  Mule Deer
+  #  Convert SpatialPointsDataFrames into a regular old dataframe
+  used_locs_md <- as.data.frame(mulies_nlcd_proj) 
+  class(used_locs_md)
+  str(used_locs_md)
+  
+  avail_locs_md <- as.data.frame(mulies_avail_nlcd_proj)
+  class(avail_locs_md)
+  str(avail_locs_md)
+  
+  #  Extract NLCD values at geographic locations
+  used_locs_md$NLCD <- extract(x = landcov, y = used_locs_md[,11:12])
+  avail_locs_md$NLCD <- extract(x = landcov, y = avail_locs_md[,5:6])
+  
+  #  Check output
+  used_locs_md$NLCD[1:5]
+  head(used_locs_md)
+  
+  avail_locs_md$NLCD[1:5]
+  head(avail_locs_md)
+  
+  #  Save
+  mulies_avail_landcov <- avail_locs_md
+  #  Exclude 3rd reprojected coordiantes in used data
+  mulies_used_landcov <- used_locs_md[,c(2:10,13)]
+  write.csv(mulies_used_landcov, "input/mulies_used_landcov.csv")
+  write.csv(mulies_avail_landcov, "input/mulies_avail_landcov.csv")
   
   
   
@@ -93,15 +137,18 @@
   demproj <- projection(DEM)
   
   #  Reproject location data to match DEM projection
-  #  Used cougar locations
+  #  Cougar locations
   cougar_dem_proj <- spTransform(cougar_spdf, crs(demproj))
-  #  Randomly selected "available points"
   available_dem_proj <- spTransform(available_spdf, crs(demproj))
+  
+  #  Mule deer locations
+  mulies_dem_proj <- spTransform(mulies_spdf, crs(demproj))
+  mulies_avail_dem_proj <- spTransform(available_mulies_spdf, crs(demproj))
   
   #  Double check projections match
   projection(DEM)
-  projection(cougar_dem_proj)
-  projection(available_dem_proj)
+  projection(mulies_dem_proj)
+  projection(mulies_avail_dem_proj)
   
   # plot(cougar_dem_proj)
   # plot(DEM, add = TRUE)
@@ -112,32 +159,64 @@
   #  Keep in mind these values are for a 30 x 30 m pixel of which the geographic
   #  location falls within
   
+  #  Cougars
   #  Convert spdf into a df with DEM projection
-  used_locs <- as.data.frame(cougar_dem_proj) 
-  class(used_locs)
-  str(used_locs)
+  used_locs_cg <- as.data.frame(cougar_dem_proj) 
+  class(used_locs_cg)
+  str(used_locs_cg)
   
-  avail_locs <- as.data.frame(available_dem_proj)
-  class(avail_locs)
-  str(avail_locs)
+  avail_locs_cg <- as.data.frame(available_dem_proj)
+  class(avail_locs_cg)
+  str(avail_locs_cg)
   
   #  Extract elevation at geographic locations
-  used_locs$elev <- extract(x = DEM, y = used_locs[,12:13])
-  avail_locs$elev <- extract(x = DEM, y = avail_locs[,6:7])
+  used_locs_cg$elev <- extract(x = DEM, y = used_locs_cg[,12:13])
+  avail_locs_cg$elev <- extract(x = DEM, y = avail_locs_cg[,6:7])
   
   #  Check output
-  used_locs$elev[1:5]
-  head(used_locs)
+  used_locs_cg$elev[1:5]
+  head(used_locs_cg)
   
-  avail_locs$elev[1:5]
-  head(avail_locs)
+  avail_locs_cg$elev[1:5]
+  head(avail_locs_cg)
 
   #  Save
-  cougar_avail_dem <- avail_locs[,c(2:8)]
+  cougar_avail_dem <- avail_locs_cg[,c(2:8)]
   #  Exclude 3rd reprojected coordiantes in used data
-  cougar_used_dem <- used_locs[,c(2:11,14)]
+  cougar_used_dem <- used_locs_cg[,c(2:11,14)]
   write.csv(cougar_used_dem, "input/cougar_used_dem.csv")
   write.csv(cougar_avail_dem, "input/cougar_avail_dem.csv")
+  
+  
+  #  Mule deer
+  #  Convert spdf into a df with DEM projection
+  used_locs_md <- as.data.frame(mulies_dem_proj) 
+  class(used_locs_md)
+  str(used_locs_md)
+  
+  avail_locs_md <- as.data.frame(mulies_avail_dem_proj)
+  class(avail_locs_md)
+  str(avail_locs_md)
+  
+  #  Extract elevation at geographic locations
+  used_locs_md$elev <- extract(x = DEM, y = used_locs_md[,11:12])
+  avail_locs_md$elev <- extract(x = DEM, y = avail_locs_md[,5:6])
+  
+  #  Check output
+  used_locs_md$elev[1:5]
+  head(used_locs_md)
+  
+  avail_locs_md$elev[1:5]
+  head(avail_locs_md)
+  
+  #  Save
+  mulies_avail_dem <- avail_locs_md[,c(2:7)]
+  #  Exclude 3rd reprojected coordiantes in used data
+  mulies_used_dem <- used_locs_md[,c(2:10,13)]
+  write.csv(mulies_used_dem, "input/mulies_used_dem.csv")
+  write.csv(mulies_avail_dem, "input/mulies_avail_dem.csv")
+  
+  
   
   
   #  Terrain Ruggedness Index (TRI)
@@ -146,26 +225,51 @@
   TRI <- raster("G:/My Drive/1_Repositories/MultiSpp_Cameras/Shapefiles/Terrain_Ruggedness/TRI.img")
   
   #  Create new df based on dem projection
-  used_locs <- as.data.frame(cougar_dem_proj) 
-  avail_locs <- as.data.frame(available_dem_proj)
+  #  Cougar
+  used_locs_cg <- as.data.frame(cougar_dem_proj) 
+  avail_locs_cg <- as.data.frame(available_dem_proj)
   
+  #  Mule Deer
+  used_locs_md <- as.data.frame(mulies_dem_proj)
+  avail_locs_md <- as.data.frame(mulies_avail_dem_proj)
+  
+  #  Cougars
   #  Extract ruggedness values at geographic locations
-  used_locs$TRI <- extract(x = TRI, y = used_locs[,12:13])
-  avail_locs$TRI <- extract(x = TRI, y = avail_locs[,6:7])
+  used_locs_cg$TRI <- extract(x = TRI, y = used_locs_cg[,12:13])
+  avail_locs_cg$TRI <- extract(x = TRI, y = avail_locs_cg[,6:7])
   
   #  Check output
-  used_locs$TRI[1:5]
-  head(used_locs)
+  used_locs_cg$TRI[1:5]
+  head(used_locs_cg)
   
-  avail_locs$TRI[1:5]
-  head(avail_locs)
+  avail_locs_cg$TRI[1:5]
+  head(avail_locs_cg)
   
   #  Save
-  cougar_avail_TRI <- avail_locs[,c(2:8)]
+  cougar_avail_TRI <- avail_locs_cg[,c(2:8)]
   #  Exclude 3rd reprojected coordiantes in used data
-  cougar_used_TRI <- used_locs[,c(2:11,14)]
+  cougar_used_TRI <- used_locs_cg[,c(2:11,14)]
   write.csv(cougar_used_TRI, "input/cougar_used_TRI.csv")
   write.csv(cougar_avail_TRI, "input/cougar_avail_TRI.csv")
+  
+  #  Mule deer
+  #  Extract ruggedness values at geographic locations
+  used_locs_md$TRI <- extract(x = TRI, y = used_locs_md[,11:12])
+  avail_locs_md$TRI <- extract(x = TRI, y = avail_locs_md[,5:6])
+  
+  #  Check output
+  used_locs_md$TRI[1:5]
+  head(used_locs_md)
+  
+  avail_locs_md$TRI[1:5]
+  head(avail_locs_md)
+  
+  #  Save
+  mulies_avail_TRI <- avail_locs_md[,c(2:7)]
+  #  Exclude 3rd reprojected coordiantes in used data
+  mulies_used_TRI <- used_locs_md[,c(2:10,13)]
+  write.csv(mulies_used_TRI, "input/mulies_used_TRI.csv")
+  write.csv(mulies_avail_TRI, "input/mulies_avail_TRI.csv")
   
   
   
@@ -178,13 +282,18 @@
   projection(rd_dnsty)  # already matches cougar data
   
   #  Make locations spdf non-spatial
+  #  Cougars
   cougar_rddnsty_df <- as.data.frame(cougar_spdf)
   available_rddnsty_df <- as.data.frame(available_spdf)
+  #  Mule deer
+  mulies_rddnsty_df <- as.data.frame(mulies_spdf)
+  mulies_avail_rddnsty_df <- as.data.frame(available_mulies_spdf)
   
   # plot(cougar_spdf)
   # plot(rd_dnsty, add = TRUE)
   # plot(cougar_spdf, add = TRUE, pch = 19, col = "red")
   
+  #  Cougars
   #  Extract road density of pixel where location falls
   cougar_rddnsty_df$rd_dnsty_m <- extract(x = rd_dnsty, y = cougar_rddnsty_df[,10:11])
   available_rddnsty_df$rd_dnsty_m <- extract(x = rd_dnsty, y = available_rddnsty_df[,4:5])
@@ -209,6 +318,30 @@
   write.csv(cougar_avail_rddnsty, "input/cougar_avail_rddnsty.csv")
   
   
+  #  Mule Deer
+  #  Extract road density of pixel where location falls
+  mulies_rddnsty_df$rd_dnsty_m <- extract(x = rd_dnsty, y = mulies_rddnsty_df[,9:10])
+  mulies_avail_rddnsty_df$rd_dnsty_m <- extract(x = rd_dnsty, y = mulies_avail_rddnsty_df[,3:4])
+  #  Convert measurement units to square kilometers
+  mulies_rddnsty_df$rd_dnsty_km <- mulies_rddnsty_df$rd_dnsty_m/1000
+  head(mulies_rddnsty_df)
+  mulies_avail_rddnsty_df$rd_dnsty_km <- mulies_avail_rddnsty_df$rd_dnsty_m/1000
+  head(mulies_avail_rddnsty_df)
+  
+  #  Check output
+  #  Exclude 3rd reprojected coordiantes in used data
+  mulies_used_rddnsty <- mulies_rddnsty_df[,c(2:10,14)]
+  head(mulies_used_rddnsty)
+  
+  mulies_avail_rddnsty <- mulies_avail_rddnsty_df[,c(2:4,8)]
+  head(mulies_avail_rddnsty)
+  
+  #  Save
+  write.csv(mulies_used_rddnsty, "input/mulies_used_rddnsty.csv")
+  write.csv(mulies_avail_rddnsty, "input/mulies_avail_rddnsty.csv")
+  
+  
+  
   #  Denisty of streams (OK only)
   #  ============================
   #  Density of roads is in meters of road per 1000 x 1000 m cell
@@ -220,13 +353,19 @@
   projection(water_dnsty) # same as cougar locations
   
   #  Make used and available cougar location spdfs non-spatial
+  #  Cougars
   cougar_waterdnsty_df <- as.data.frame(cougar_spdf)
   available_waterdnsty_df <- as.data.frame(available_spdf)
+  
+  #  Mule Deer
+  mulies_waterdnsty_df <- as.data.frame(mulies_spdf)
+  mulies_avail_waterdnsty_df <- as.data.frame(available_mulies_spdf)
   
   # plot(cougar_spdf)
   # plot(water_dnsty, add = TRUE)
   # plot(cougar_spdf, add = TRUE, pch = 19, col = "blue")
   
+  #  Cougars
   #  Extract water density at location of each point
   cougar_waterdnsty_df$water_dnsty_m <- raster::extract(x = water_dnsty, y = cougar_waterdnsty_df[,10:11])
   available_waterdnsty_df$water_dnsty_m <- raster::extract(x = water_dnsty, y = available_waterdnsty_df[,4:5])
@@ -250,10 +389,65 @@
   write.csv(cougar_used_h20dnsty, "input/cougar_used_h20dnsty.csv")
   write.csv(cougar_avail_h20dnsty, "input/cougar_avail_h20dnsty.csv")
   
+  #  Mule Deer
+  #  Extract water density at location of each point
+  mulies_waterdnsty_df$water_dnsty_m <- raster::extract(x = water_dnsty, y = mulies_waterdnsty_df[,9:10])
+  mulies_avail_waterdnsty_df$water_dnsty_m <- raster::extract(x = water_dnsty, y = mulies_avail_waterdnsty_df[,3:4])
+  #  Convert measurement units to square kilometers
+  mulies_waterdnsty_df$water_dnsty_km <- mulies_waterdnsty_df$water_dnsty_m/1000
+  head(mulies_waterdnsty_df)
+  mulies_avail_waterdnsty_df$water_dnsty_km <- mulies_avail_waterdnsty_df$water_dnsty_m/1000
+  head(mulies_avail_waterdnsty_df)
+  
+  #  Check output
+  #  Exclude 3rd reprojected coordiantes in used data
+  mulies_used_h20dnsty <- mulies_waterdnsty_df[,c(2:10,14)]
+  head(mulies_used_h20dnsty)
+  
+  mulies_avail_h20dnsty <- mulies_avail_waterdnsty_df[,c(2:4,8)]
+  head(mulies_avail_h20dnsty)  
+  
+  #  Save
+  write.csv(mulies_used_h20dnsty, "input/mulies_used_h20dnsty.csv")
+  write.csv(mulies_avail_h20dnsty, "input/mulies_avail_h20dnsty.csv")
   
   
   
-  #  NDVI
+  
+  
+  #  NDVI Amplitude (2018)
+  #  Maximum increase in canopy photosynthetic activity above the baseline
+  #  Difference between MAXN(Maximum level of photosynthetic activity in the canopy) 
+  #  & SOSN (Level of photosynthetic activity at the beginning of measurable photosynthesis)
+  #  Data: C6 Aqua Western U.S. 250 m eMODIS Remote Sensing Phenology Data 2018
+  #  https://phenology.cr.usgs.gov/get_data_Aqua_C6_250w.php
+  #  More about this product: https://www.usgs.gov/centers/eros/science/usgs-eros-archive-vegetation-monitoring-emodis-remote-sensing-phenology?qt-science_center_objects=0#qt-science_center_objects
+  #  Citation: DOI https://doi.org//10.5066/F7PC30G1
+  #  Projection seems to be WGS_1984_Lambert_Azimuthal_Equal_Area
+  #  Proj4js.defs["SR-ORG:7963"] = "+proj=laea +lat_0=5 +lon_0=19 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
+  ndvi <- raster("Shapefiles/MODIS_Aqua_NDVI_Amplitude/C6_eMODIS_West_AMP2018/amp_2018w.ovr")
+  res(ndvi)
+  projection(ndvi)
+  ndviproj <- CRS("+proj=laea +lat_0=5 +lon_0=19 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs")
+  crs(ndvi) <- ndviproj
+  plot(ndvi)
+  
+  #  Reproject location data to match
+  cougar_ndvi_proj <- spTransform(cougar_spdf, crs(ndviproj))
+  available_ndvi_proj <- spTransform(available_spdf, crs(ndviproj))
+  
+  cougar_ndvi_df <- as.data.frame(cougar_ndvi_proj)
+  available_ndvi_df <- as.data.frame(available_ndvi_proj)
+
+  cougar_ndvi_df$ndvi <- extract(x = ndvi, y = cougar_ndvi_df[,10:11])
+  available_ndvi_df <- extract(x = ndvi, y = available_ndvi_df[,4:5])
+  
+  
+  
+  
+  
+  
+  
   #  Nead to convert individual 16-day files from HDF4 format to GEOtiff
   #  No idea what projection these will come in
   #  Code from (https://stackoverflow.com/questions/36772341/reading-hdf-files-into-r-and-converting-them-to-geotiff-rasters)
@@ -284,7 +478,7 @@
   sds18 <- get_subdatasets("Shapefiles/MODIS_NDVI_MOD13Q1/MOD13Q1.A2018273.h10v04.006.2018295105706.hdf")
   
   #  Which layer are you interested in? NDVI is 1st layer
-  sds4
+  sds14
   
   #  Generate new names for these files once they're reformatted
   files <- dir(path = "G:/My Drive/1 Dissertation/Analyses/Shapefiles/MODIS_NDVI_MOD13Q1", pattern = ".hdf")
@@ -339,12 +533,14 @@
   #  Make a raser stack of all NDVI rasters
   NDVI_stack <- stack(rast1, rast2, rast3, rast4, rast5, rast6, rast7, rast8, 
                       rast9, rast10, rast11, rast12)
-  writeRaster(NDVI_stack, filename = "Shapefiles/MODIS_NDVI_MOD13Q1/NDVI_stack", format = "GTiff")
+  writeRaster(NDVI_stack, filename = "Shapefiles/MODIS_NDVI_MOD13Q1/NDVI_stack", format = "GTiff", overwrite = TRUE)
   #  Read this in with rasterstack()
   
   #  Average across all rasters in stack for each pixel to get mean value over time period
   mean_NDVI <- mean(NDVI_stack)
-  writeRaster(mean_NDVI, filename = "Shapefiles/MODIS_NDVI_MOD13Q1/mean_NDVI_summer18", format = "HFA")
+  writeRaster(mean_NDVI, filename = "Shapefiles/MODIS_NDVI_MOD13Q1/mean_NDVI_summer18", format = "HFA", overwrite = TRUE)
+  mean_NDVI <- raster("Shapefiles/MODIS_NDVI_MOD13Q1/mean_NDVI_summer18.img")
+  writeRaster(mean_NDVI, "Shapefiles/MODIS_NDVI_MOD13Q1/mean_NDVI.tif", format="GTiff", overwrite=TRUE)
   
   #  Reproject used & available locations to match weird NDVI projection
   NDVIproj <- proj4string(mean_NDVI)
@@ -366,7 +562,7 @@
   #  Extract covaraite data at used & available locations
   #  ====================================================
   #  Extract NLCD values at geographic locations
-  used_locs$NDVI <- extract(x = mean_NDVI_stack, y = used_locs[,12:13])
+  used_locs$NDVI <- extract(x = mean_NDVI, y = used_locs[,12:13])
   avail_locs$NDVI <- extract(x = mean_NDVI, y = avail_locs[,6:7])
   
   #  Check output
