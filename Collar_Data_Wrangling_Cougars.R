@@ -292,42 +292,48 @@
   
   #  1. Distance to nearest road (continuous)
   #  ========================================
-  #  Read in shapefile (these are big so they take awhile)
-  #  Currently reading in shapefile that was cropped to 2018 cougar locations bbox
-  # roads_SA <- st_read("Shapefiles/Roads/roads_SA.shp", crs = "+init=epsg:2855")
-  roads_OK <- st_read("Shapefiles/Roads/roads_OKcoug.shp", crs = "+init=epsg:2855") 
-  # roads_NE <- st_read("Shapefiles/Roads/roads_NEcoug.shp", crs = "+init=epsg:2855")
+  #  B. Gardner calculated distance to nearest road based on script below
+  used_coug_rddist <- read.csv("input/Cougar18_rd_dist_BGardner/coug18_used_rd_dist.csv")
+  avail_coug_rddist <- read.csv("input/Cougar18_rd_dist_BGardner/coug18_avail_rd_dist.csv")
+  head(avail_coug_rddist)
   
-  #  Visualize
-  # ggplot() +
-  #   geom_sf(data = roads_OK) +
-  #   geom_sf(data = OKcoug18_used_sf, aes(color = Animal_ID))
   
-  #  For all cougar locations (used & available)
-  #  Measure distance btwn each point and every road in study area
-  #  THIS TAKES FOREVER
-  road_dist_used_OKcoug <- st_distance(y = OKcoug18_used_sf, x = roads_OK)
-  road_dist_avail_OKcoug <- st_distance(y = OKcoug18_avail_sf, x = roads_OK)
-  # road_dist_used_NEcoug <- st_distance(y = coug18_used_sf, x = roads_NE)
-  # road_dist_avail_NEcoug <- st_distance(y = coug18_avail_sf, x = roads_NE)
-  
-  #save(road_dist_avail_OKcoug, file = "./input/road_dist_avail_OKcoug.RData")
-  
-  #  Find closest road (minimum distance) to each point & added to dataframe
-  coug18_used_sf$road_dist <- apply(road_dist_used_OKcoug, 2, min)
-  coug18_avail_sf$road_dist <- apply(road_dist_avail_OKcoug, 2, min)
-  #  ERROR: Error: cannot allocate vector of size 19.0 Gb
-  #  it's too big!!! What do I do?!?!?!?!
-
-  
-    ####  HOW DO I ADD THE NE STUFF W/O MAKING NEW COLUMN OR OVERWRITING CURRENT COLUMN?
-  # coug18_used_sf$road_dist <- apply(road_dist_used_NEcoug, 2, min)
-  # coug18_avail_sf$road_dist <- apply(road_dist_avail_NEcoug, 2, min)
-  
-  coug18_used_rd_dist <- as.data.frame(coug18_used_sf)
-  write.csv(coug18_used_rd_dist, "./Input/coug18_used_rd_dist.csv")
-  coug18_avail_rd_dist <- as.data.frame(coug18_avail_sf)
-  write.csv(coug18_avail_rd_dist, "./Input/coug18_avail_rd_dist.csv")
+  # #  Read in shapefile (these are big so they take awhile)
+  # #  Currently reading in shapefile that was cropped to 2018 cougar locations bbox
+  # # roads_SA <- st_read("Shapefiles/Roads/roads_SA.shp", crs = "+init=epsg:2855")
+  # roads_OK <- st_read("Shapefiles/Roads/roads_OKcoug.shp", crs = "+init=epsg:2855") 
+  # # roads_NE <- st_read("Shapefiles/Roads/roads_NEcoug.shp", crs = "+init=epsg:2855")
+  # 
+  # #  Visualize
+  # # ggplot() +
+  # #   geom_sf(data = roads_OK) +
+  # #   geom_sf(data = OKcoug18_used_sf, aes(color = Animal_ID))
+  # 
+  # #  For all cougar locations (used & available)
+  # #  Measure distance btwn each point and every road in study area
+  # #  THIS TAKES FOREVER
+  # road_dist_used_OKcoug <- st_distance(y = OKcoug18_used_sf, x = roads_OK)
+  # road_dist_avail_OKcoug <- st_distance(y = OKcoug18_avail_sf, x = roads_OK)
+  # # road_dist_used_NEcoug <- st_distance(y = coug18_used_sf, x = roads_NE)
+  # # road_dist_avail_NEcoug <- st_distance(y = coug18_avail_sf, x = roads_NE)
+  # 
+  # #save(road_dist_avail_OKcoug, file = "./input/road_dist_avail_OKcoug.RData")
+  # 
+  # #  Find closest road (minimum distance) to each point & added to dataframe
+  # coug18_used_sf$road_dist <- apply(road_dist_used_OKcoug, 2, min)
+  # coug18_avail_sf$road_dist <- apply(road_dist_avail_OKcoug, 2, min)
+  # #  ERROR: Error: cannot allocate vector of size 19.0 Gb
+  # #  it's too big!!! What do I do?!?!?!?!
+  # 
+  # 
+  #   ####  HOW DO I ADD THE NE STUFF W/O MAKING NEW COLUMN OR OVERWRITING CURRENT COLUMN?
+  # # coug18_used_sf$road_dist <- apply(road_dist_used_NEcoug, 2, min)
+  # # coug18_avail_sf$road_dist <- apply(road_dist_avail_NEcoug, 2, min)
+  # 
+  # coug18_used_rd_dist <- as.data.frame(coug18_used_sf)
+  # write.csv(coug18_used_rd_dist, "./Input/coug18_used_rd_dist.csv")
+  # coug18_avail_rd_dist <- as.data.frame(coug18_avail_sf)
+  # write.csv(coug18_avail_rd_dist, "./Input/coug18_avail_rd_dist.csv")
   
   
   #  1.5  Road density (continuous)
@@ -336,54 +342,53 @@
   #  Resolution: 999 x 999 m
   cougar_used_rddnsty <- read.csv("./Input/cougar_used_rddnsty.csv")
   cougar_avail_rddnsty <- read.csv("./Input/cougar_avail_rddnsty.csv")
-  #  Convert measuremetn units to square kilometers
-  cougar_used_rddnsty$rd_dnsty_km <- cougar_used_rddnsty$rd_dnsty/1000
-  cougar_avail_rddnsty$rd_dnsty_km <- cougar_avail_rddnsty$rd_dnsty/1000
-  head(cougar_used_rddnsty)
-  
+
   
   #  2. Distance to water (continuous)
   #  ================================
-  hydro_OK <- st_read("Shapefiles/Hydro/hydro_OK.shp", crs = "+init=epsg:2855") 
-  hydro_Ch <- st_read("Shapefiles/Hydro/hydro_Ch.shp", crs = "+init=epsg:2855") 
-  hydro_St <- st_read("Shapefiles/Hydro/hydro_St.shp", crs = "+init=epsg:2855")
-  hydro_PO <- st_read("Shapefiles/Hydro/hydro_PO.shp", crs = "+init=epsg:2855")
-  hydro_Sp <- st_read("Shapefiles/Hydro/hydro_Sp.shp", crs = "+init=epsg:2855")
-  
-  #  Visualize
-  # ggplot() +
-  #   geom_sf(data = hydro_OK) +
-  #   geom_sf(data = hydro_Ch) +
-  #   geom_sf(data = coug18_used_sf, aes(color = Animal_ID))
-  
-  #  Measure distance btwn each point and every stream in study area...
-  #  this takes AWHILE
-  hydro_OK_dist_coug <- st_distance(y = coug18_used_sf, x = hydro_OK)
-  hydro_Ch_dist_coug <- st_distance(y = coug18_used_sf, x = hydro_Ch)
-  hydro_OK_dist_rnd <- st_distance(y = coug18_avail_sf, x = hydro_OK) 
-  hydro_Ch_dist_rnd <- st_distance(y = coug18_avail_sf, x = hydro_Ch) 
-  
-  #  Find closest stream (minimum distance) to each point & added to dataframe
-  coug18_used_sf$hydro_OK_dist <- apply(hydro_OK_dist_coug, 2, min)
-  coug18_used_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_coug, 2, min)  
-  coug18_avail_sf$hydro_OK_dist <- apply(hydro_OK_dist_rnd, 2, min)
-  coug18_avail_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_rnd, 2, min)
-  
-  #  Find shortest distance btwn each point and streams in different counties 
-  #  and only save that one to df (Only need one measurement per point)
-  # min_dist_coug <- transform(cougar1_sf, min_dist = pmin(hydro_OK_dist, hydro_Ch_dist))
-  # min_dist_rnd <- transform(rndpts_sf, min_dist = pmin(hydro_OK_dist, hydro_Ch_dist))
-  #dont know if this works yet
-  
-  # give myself something to practice with for RSF b/c hydro_dist_rnd takes FOREVER
-  # require(truncnorm) # truncates normal distribution by lower (a) & upper (b) bounds
-  # road_dist_rnd_FAKE <- rtruncnorm(n = 10000, a = 0, b = 2000, mean = 350, sd = 150)
-  # rndpts_sf$FAKE_road_dist <- road_dist_rnd_FAKE
+  # hydro_OK <- st_read("Shapefiles/Hydro/hydro_OK.shp", crs = "+init=epsg:2855") 
+  # hydro_Ch <- st_read("Shapefiles/Hydro/hydro_Ch.shp", crs = "+init=epsg:2855") 
+  # hydro_St <- st_read("Shapefiles/Hydro/hydro_St.shp", crs = "+init=epsg:2855")
+  # hydro_PO <- st_read("Shapefiles/Hydro/hydro_PO.shp", crs = "+init=epsg:2855")
+  # hydro_Sp <- st_read("Shapefiles/Hydro/hydro_Sp.shp", crs = "+init=epsg:2855")
+  # 
+  # #  Visualize
+  # # ggplot() +
+  # #   geom_sf(data = hydro_OK) +
+  # #   geom_sf(data = hydro_Ch) +
+  # #   geom_sf(data = coug18_used_sf, aes(color = Animal_ID))
+  # 
+  # #  Measure distance btwn each point and every stream in study area...
+  # #  this takes AWHILE
+  # hydro_OK_dist_coug <- st_distance(y = coug18_used_sf, x = hydro_OK)
+  # hydro_Ch_dist_coug <- st_distance(y = coug18_used_sf, x = hydro_Ch)
+  # hydro_OK_dist_rnd <- st_distance(y = coug18_avail_sf, x = hydro_OK) 
+  # hydro_Ch_dist_rnd <- st_distance(y = coug18_avail_sf, x = hydro_Ch) 
+  # 
+  # #  Find closest stream (minimum distance) to each point & added to dataframe
+  # coug18_used_sf$hydro_OK_dist <- apply(hydro_OK_dist_coug, 2, min)
+  # coug18_used_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_coug, 2, min)  
+  # coug18_avail_sf$hydro_OK_dist <- apply(hydro_OK_dist_rnd, 2, min)
+  # coug18_avail_sf$hydro_Ch_dist <- apply(hydro_Ch_dist_rnd, 2, min)
+  # 
+  # #  Find shortest distance btwn each point and streams in different counties 
+  # #  and only save that one to df (Only need one measurement per point)
+  # # min_dist_coug <- transform(cougar1_sf, min_dist = pmin(hydro_OK_dist, hydro_Ch_dist))
+  # # min_dist_rnd <- transform(rndpts_sf, min_dist = pmin(hydro_OK_dist, hydro_Ch_dist))
+  # #dont know if this works yet
+  # 
+  # # give myself something to practice with for RSF b/c hydro_dist_rnd takes FOREVER
+  # # require(truncnorm) # truncates normal distribution by lower (a) & upper (b) bounds
+  # # road_dist_rnd_FAKE <- rtruncnorm(n = 10000, a = 0, b = 2000, mean = 350, sd = 150)
+  # # rndpts_sf$FAKE_road_dist <- road_dist_rnd_FAKE
   
   
   #  2.5. Water density
   #  =================================
-  
+  #  Water density = total length of streams (in km) per 1 sq. km
+  #  Resolution: 997.4 m x 999 m
+  used_water_dnsty <- read.csv(".input/cougar_used_h20dnsty.csv")
+  avail_water_dnsty <- read.csv("input/cougar_avail_h20dnsty.csv")
   
   
   #  3. Land cover type (categrorical)
@@ -454,15 +459,16 @@
     cbind(cougar_used_landcov$NLCD) %>%
     cbind(cougar_used_dem$elev) %>%
     cbind(cougar_used_tri$TRI) %>%
-    cbind(cougar_used_rddnsty$rd_dnsty_km) #%>%
-    cbind(coug18_used_sf$road_dist) %>%
-    cbind(coug18_used_sf$hydro_OK_dist) %>%
-    cbind(coug18_used_sf$hydro_Ch_dist)
+    cbind(cougar_used_rddnsty$rd_dnsty_km) %>%
+    cbind(cougar_used_h20dnsty$water_dnsty_km) %>%
+    #cbind(coug18_used_sf$road_dist) %>%
+    #cbind(coug18_used_sf$hydro_OK_dist) %>%
+    #cbind(coug18_used_sf$hydro_Ch_dist)
   colnames(coug18_used_covs) <- c("Region", "Animal_ID", "Collar_ID", "TimeStamp", 
                           "DateTime", "location_long", "location_lat", 
                           "Longitude", "Latitude", "NLCD", "Elev", "TRI", 
-                          "Rd_Density_km", "Nearest_Rd", "Nearest_H20_OK", 
-                          "Nearest_H20_Ch") 
+                          "Rd_Density_km", "Water_Density_km") 
+                          # "Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch"
   
   head(coug18_used_covs)
   
