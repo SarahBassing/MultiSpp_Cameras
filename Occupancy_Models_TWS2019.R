@@ -7,7 +7,7 @@
   ##  June 13 and Sept. 30, 2018. Detection data collected via camera traps,
   ##  covariate data derived from remotely sensed data and collected at camera
   ##  sites. Study objectives are to evaluate discrepencies in habitat use for 
-  ##  these two species compared to GIS collar based RSF estiamtes of habitat use.
+  ##  these two species compared to GPS collar based RSF estiamtes of habitat use.
   ##  Do multispieces monitoring designs misrepresent habitat use/preferences for
   ##  some species when they are not the sole target of the study?
   ##  ===================================
@@ -66,6 +66,9 @@
   Height_o14 <- scale(cougdat$Height_o14)
   Height_o15 <- scale(cougdat$Height_o15)
   Height_o16 <- scale(cougdat$Height_o16)
+  
+  #  How correlated are road density and distance to nearest road?
+  cor(Rd_Density, Nearest_Rd)
   
   #  Set dimensions for survey-level covaraite matrix
   nrows <- nrow(covs)
@@ -130,7 +133,7 @@
   (coug_det2 <- occu(~dist_focal ~1, cougUMF)) # distance to focal point    ---- dropped rows due to missing data
   (coug_det3 <- occu(~Height ~1, cougUMF))     # camera height from ground  ---- dropped rows due to missing data
   
-  coug_det_mods <- fitList(m1 = coug_null, m2 = coug_det1)
+  coug_det_mods <- fitList(m1 = coug_null, m2 = coug_det1)  
   modSel(coug_det_mods)
   #  Can't compare m3 = coug_det2, m4 = coug_det3 to null & det1 b/c likelihoods different
   
@@ -176,9 +179,11 @@
   lc_mod6 <- linearComb(coug_mod6, c(1, 0), type = "state")
   
   backTransform(lc_mod2)   # psi = 0.948, se = 0.143 at mean elevation???
+  backTransform(coug_mod2, type = "det")   # det = 0.0506, se = 0.011
   backTransform(lc_mod2.5) # psi = 0.521, se = 0.259 at mean elevation & elevation^2... not sure how to interperate this
+  backTransform(coug_mod2.5, type = "det") # det = 0.069, se = 0.025
   backTransform(lc_mod6)   # psi = 0.38, se = 0.147 at mean density of streams
-  
+  backTransform(coug_mod6, type = "det")
 
   
   
@@ -218,7 +223,7 @@
   modSel(mule_rd_mods)
   
   #  Model selection of occupancy models
-  mule_occ_mods <- fitList(m1 = mule_mod1, m2 = mule_mod2, m3 = mule_mod3, 
+  mule_occ_mods <- fitList(m1 = mule_mod1, m2 = mule_mod2, m3 = mule_mod3, m4 = mule_mod4,
                            m5 = mule_mod5, m6 = mule_mod6, m8 = mule_mod8, 
                            m9 = mule_mod9, m10 = mule_null, m2.5 = mule_mod2.5)  
   modSel(mule_occ_mods)
@@ -240,8 +245,11 @@
   lc_mod3 <- linearComb(mule_mod3, c(1, 0), type = "state")
   
   backTransform(lc_mod2)    # psi = 0.777, se = 0.058 at mean elevation
+  backTransform(mule_mod2, type = "det")    # det 0.487, se = 0.021
   backTransform(lc_mod2.5)  # psie = 0.818, se = 0.069 at mean elevation & elevation^2
-  backTransform(lc_mod6)    # psi = 0.38, se = 0.147 at mean ruggedness
+  backTransform(mule_mod2.5, type = "det")  # det = 0.487, se = 0.021
+  backTransform(lc_mod3)    # psi = 0.776, se = 0.057 at mean ruggedness
+  backTransform(mule_mod3, type = "det")    # det = 0.487, set = 0.021
   
   
 
@@ -277,13 +285,19 @@
   lc_det3 <- linearComb(mule_det3, c(1, 0), type = "det")
   #  Looking at elevation (mod2), elevation^2 (mod2.5), & terrain ruggedness (mod3) on occupancy
   lc_mod2 <- linearComb(mule_mod2, c(1, 0), type = "state")
+  lc_mod2det <- linearComb(mule_mod2, c(1, 0), type = "det")
   lc_mod2.5 <- linearComb(mule_mod2.5, c(1, 0, 0), type = "state")
-  lc_mod3 <- linearComb(mule_mod3, c(1, 0), type = "state")
+  lc_mod2.5det <- linearComb(mule_mod2.5, c(1, 0), type = "det")
+  lc_mod6 <- linearComb(mule_mod6, c(1, 0), type = "state")
+  lc_mod6det <- linearComb(mule_mod6, c(1, 0), type = "det")
   
-  backTransform(lc_det3)    # det = 0.488, se = 0.021 at mean camera height
+  backTransform(lc_det3)      # det = 0.488, se = 0.021 at mean camera height
   backTransform(lc_mod2)    # psi = 0.776, se = 0.058 at mean elevation
-  backTransform(lc_mod2.5)  # psie = 0.818, se = 0.07 at mean elevation & elevation^2
-  backTransform(lc_mod6)    # psi = 0.38, se = 0.147 at mean ruggedness
+  backTransform(lc_mod2det)   # det = 0.488, se = 0.021 at mean camera height
+  backTransform(lc_mod2.5)  # psi = 0.818, se = 0.07 at mean elevation & elevation^2
+  backTransform(lc_mod2.5det) # det = 0.488, se = 0.021 at mean camera height
+  backTransform(lc_mod6)    # psie = 0.761, se = 0.056 at mean ruggedness
+  backTransform(lc_mod6det)   # det = 0.488, se = 0.021 at mean camera height
   
   
   
@@ -323,6 +337,7 @@
   
   
   #  Plot covariates
+  #  ====================
   par(mfrow = c(3,3))
   hist(covs$Elev, main = "Elevation", xlab = "Elevation (m)")
   hist(covs$Ruggedness, main = "Terrain Ruggedness", xlab = "TRI")
