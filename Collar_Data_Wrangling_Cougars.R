@@ -88,9 +88,6 @@
   # write.csv(cougars_summer18, file = "./input/cougars_summer18.csv")
   # writeOGR(coug18_used_spdf, dsn = "./input", layer = "coug18_used_spdf", driver = "ESRI Shapefile")
   
-  #  Read in cougar data -- ONLY DO if short cutting everything above
-  # cougars_summer18 <- read.csv("./input/cougars_summer18.csv")
-  
   #  Count number of points per study area with final number of cougars
   n_studyarea_pts <- cougars_summer18 %>%
     group_by(Region) %>%
@@ -213,11 +210,6 @@
   coug18_avail_df <- as.data.frame(coug18_avail_spdf)
   # write.csv(coug18_avail_df, file = "./Input/coug18_avail_df.csv")
   # writeOGR(coug18_avail_spdf, dsn = "./Input", layer = "coug18_avail_spdf", driver = "ESRI Shapefile")
-  
-  #  Read in random available cougar points-- ONLY DO if short cutting everything above
-  # coug18_avail_df <- read.csv("./Input/coug18_avail_df.csv")
-  # coug18_avail_sf <- st_as_sf(coug18_avail_df, coords = 4:5, crs = "+init=epsg:2855")
-  
   
   #  Count total number of available points in each study area
   n_rnd_pts <- coug18_avail_df %>%
@@ -483,7 +475,7 @@
   head(coug18_used_covs)
   
   #  Available
-  coug_18_avail_covs <- coug18_avail_df %>%
+  coug18_avail_covs <- coug18_avail_df %>%
     mutate(
       Used <- rep(0, nrow(.))
     ) %>%
@@ -495,15 +487,15 @@
     # cbind(coug18_avail_sf$road_dist) %>%
     # cbind(coug18_avail_sf$hydro_OK_dist) %>%
     # cbind(coug18_avail_sf$hydro_Ch_dist)
-  colnames(coug_18_avail_covs) <- c("X", "Animal_ID", "Region","Longitude",  
+  colnames(coug18_avail_covs) <- c("Animal_ID", "Region","Longitude",  
                                     "Latitude", "Used", "NLCD", "Elev", "TRI", 
                                     "Rd_Density_km", "Water_Density_km")
                                     #"Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch" 
-  head(coug_18_avail_covs)
+  head(coug18_avail_covs)
   
   
   write.csv(coug18_used_covs, "Input/coug18_used_covs.csv")
-  write.csv(coug_18_avail_covs, "Input/coug_18_avail_covs.csv")
+  write.csv(coug18_avail_covs, "Input/coug18_avail_covs.csv")
   
   
   
