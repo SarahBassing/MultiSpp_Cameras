@@ -374,6 +374,9 @@
   #  Combine covariate data into a single df
   #  Used 
   mulies18_used_covs <- mulies_summer18[,c(2:9)] %>%
+    mutate(
+      Used <- rep(1, nrow(.))
+    ) %>%
     cbind(mulies_used_landcov$NLCD) %>%
     cbind(mulies_used_dem$elev) %>%
     cbind(mulies_used_tri$TRI) %>%
@@ -384,14 +387,17 @@
     # cbind(mulies18_used_sf$hydro_Ch_dist)
   colnames(mulies18_used_covs) <- c("Collar_ID", "location_long", "location_lat",  
                                   "ObsDTPST", "DateTime", "Julian", 
-                                  "Longitude", "Latitude", "NLCD", "Elev", "TRI", 
-                                  "Rd_Density_km", "H20_Density_km")  
+                                  "Longitude", "Latitude", "Used", "NLCD", "Elev",  
+                                  "TRI", "Rd_Density_km", "H20_Density_km")  
                                   # "Nearest_Rd", "Nearest_H20_OK","Nearest_H20_Ch"
   
   head(mulies18_used_covs)
   
   #  Available
   mulies18_avail_covs <- mulies18_avail_df %>%
+    mutate(
+      Used <- rep(0, nrow(.))
+    ) %>%
     cbind(mulies_avail_landcov$NLCD) %>%
     cbind(mulies_avail_dem$elev) %>%
     cbind(mulies_avail_tri$TRI) %>%
@@ -400,7 +406,7 @@
     # cbind(mulies18_avail_sf$road_dist) %>%
     # cbind(mulies18_avail_sf$hydro_OK_dist) %>%
     # cbind(mulies18_avail_sf$hydro_Ch_dist)
-  colnames(mulies18_avail_covs) <- c("Collar_ID", "Longitude", "Latitude", 
+  colnames(mulies18_avail_covs) <- c("Collar_ID", "Longitude", "Latitude", "Used", 
                                     "NLCD", "Elev", "TRI", "Rd_Density_km", 
                                     "H20_Density_km")
                                     #"Nearest_Rd", "Nearest_H20_OK", "Nearest_H20_Ch" 
