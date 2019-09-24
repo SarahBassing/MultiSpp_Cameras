@@ -55,8 +55,11 @@
   #  Filter dates to specific range (06/01/2018 - 09/30/2018)
   images_summer18 <- images %>%
     filter(Date > "2018-05-31") %>%
-    filter(Date < "2018-09-30") %>%
+    filter(Date < "2018-10-01") %>%
     dplyr::select("Image", "File", "Cell_ID", "Camera_ID", "Date", "Time", "Species")
+  
+  min(images_summer18$Date); max(images_summer18$Date)
+  
   
   
   #  Camera station data
@@ -84,7 +87,7 @@
   print(late_deploy)
   
   #  Remove stations that were established after time window of interest (09/30/2018)
-  stations <- stations[stations$Set_date < "2018-09-30",]
+  stations <- stations[stations$Set_date < "2018-10-01",]
   
   head(stations)
   str(stations)
